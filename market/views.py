@@ -233,17 +233,31 @@ def forgot_password(request):
         # Supabase sends the recovery email
         # The 'redirect_to' should be your password update page
         supabase.auth.reset_password_for_email(email, {
-            "redirect_to": "https://momshop-c79n.onrender.com/update-password/"
+            "redirect_to": "http://localhost:8000/update-password/"
         })
         return render(request, 'forgot_password.html', {"msg": "Check your email!"})
     return render(request, 'forgot_password.html')
 
 def update_password(request):
     if request.method == "POST":
-        new_password = request.POST.get('password')
-        # Supabase uses the session from the recovery link automatically
-        supabase.auth.update_user({"password": new_password})
-        return redirect('login')
+        new_password = request.POST.get('new_password')
+        access_token = request.POST.get('access_token')
+        refresh_token = request.POST.get('refresh_token')
+
+        if access_token and refresh_token:
+            try:
+                # Supply both arguments as required by the latest SDK
+                supabase.auth.set_session(access_token, refresh_token)
+                
+                # Now that the session is set, this will work
+                supabase.auth.update_user({"password": new_password})
+                
+                return render(request, 'password_reset_complete.html')
+            except Exception as e:
+                return render(request, 'update_password.html', {"msg": f"Update failed: {str(e)}"})
+        else:
+            return render(request, 'update_password.html', {"msg": "Session data missing. Try the email link again."})
+            
     return render(request, 'update_password.html')
 
 def home(request):
