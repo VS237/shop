@@ -233,7 +233,7 @@ def forgot_password(request):
         # Supabase sends the recovery email
         # The 'redirect_to' should be your password update page
         supabase.auth.reset_password_for_email(email, {
-            "redirect_to": "http://localhost:8000/update-password/"
+            "redirect_to": "https://momshop-c79n.onrender.com/update-password/"
         })
         return render(request, 'forgot_password.html', {"msg": "Check your email!"})
     return render(request, 'forgot_password.html')
@@ -1734,3 +1734,6 @@ def chatbot_response(request):
 
 def custom_404(request, exception):
     return render(request, '404.html', status=404)    
+
+def error_500(request):
+    return render(request, '500.html', status=500)
