@@ -1,0 +1,406 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #000000 0%, #333333 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* Main Container */
+.center {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+    padding: 40px 30px;
+    width: 100%;
+    max-width: 450px;
+    border: 1px solid rgba(255, 165, 0, 0.2);
+}
+
+/* Header */
+h1 {
+    text-align: center;
+    color: #000;
+    margin-bottom: 30px;
+    font-size: 2.2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #FF8C00, #FF4500);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Messages */
+.message-container {
+    margin-bottom: 20px;
+}
+
+.message-container h4 {
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: center;
+    margin-bottom: 10px;
+    border: 1px solid transparent;
+}
+
+.message-container h4[style*="color: firebrick"] {
+    background-color: rgba(220, 53, 69, 0.1);
+    border-color: rgba(220, 53, 69, 0.2);
+    color: #dc3545 !important;
+}
+
+.message-container h4[style*="color: dodgerblue"] {
+    background-color: rgba(255, 165, 0, 0.1);
+    border-color: rgba(255, 165, 0, 0.3);
+    color: #FF8C00 !important;
+}
+
+/* Form Styles */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Name Row Styles */
+.name-row {
+    display: flex;
+    gap: 15px;
+    width: 100%;
+}
+
+.name-field {
+    flex: 1;
+    min-width: 0; /* Prevents flex items from overflowing */
+}
+
+/* Responsive adjustments for name row */
+@media (max-width: 768px) {
+    .name-row {
+        gap: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .name-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .name-field {
+        flex: none;
+    }
+}
+
+/* Input Fields */
+.txt_field {
+    position: relative;
+    margin-bottom: 10px;
+}
+
+.txt_field input {
+    width: 100%;
+    padding: 15px 20px;
+    border: 2px solid #e1e5ee;
+    border-radius: 12px;
+    background: #fff;
+    font-size: 1rem;
+    color: #000; /* Changed to black for better visibility */
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.txt_field input:focus {
+    border-color: #FF8C00;
+    box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.txt_field input:valid {
+    border-color: #FF8C00;
+}
+
+.txt_field label {
+    position: absolute;
+    top: 0;
+    left: 20px;
+    transform: translateY(-50%);
+    color: #666;
+    font-size: 0.85rem;
+    pointer-events: none;
+    background: #fff;
+    padding: 0 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.txt_field input:focus + label,
+.txt_field input:not(:placeholder-shown) + label {
+    top: 0;
+    color: #FF8C00;
+    font-weight: 700;
+}
+
+/* Remove placeholder visibility when typing */
+.txt_field input::placeholder {
+    color: transparent;
+}
+
+.txt_field input:focus::placeholder {
+    color: #999;
+}
+
+.txt_field span {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(135deg, #FF8C00, #FF4500);
+    transition: width 0.3s ease;
+}
+
+.txt_field input:focus ~ span {
+    width: 100%;
+}
+
+/* Password Strength Indicator */
+.password-strength {
+    margin-top: 5px;
+    height: 4px;
+    border-radius: 2px;
+    background: #e9ecef;
+    overflow: hidden;
+}
+
+.strength-bar {
+    height: 100%;
+    width: 0%;
+    transition: all 0.3s ease;
+    border-radius: 2px;
+}
+
+.strength-weak { background: #dc3545; width: 33%; }
+.strength-medium { background: #FFA500; width: 66%; }
+.strength-strong { background: #FF8C00; width: 100%; }
+
+/* Submit Button */
+input[type="submit"] {
+    background: linear-gradient(135deg, #FF8C00, #FF4500);
+    color: white;
+    border: none;
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 140, 0, 0.3);
+}
+
+input[type="submit"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 140, 0, 0.4);
+    background: linear-gradient(135deg, #FF4500, #FF8C00);
+}
+
+input[type="submit"]:active {
+    transform: translateY(0);
+}
+
+/* Signup Link */
+.signup_link {
+    text-align: center;
+    margin-top: 20px;
+    color: #666;
+    font-size: 0.95rem;
+}
+
+.signup_link a {
+    color: #FF8C00;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.signup_link a:hover {
+    color: #FF4500;
+    text-decoration: underline;
+}
+
+/* Form Groups for better spacing */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    body {
+        padding: 15px;
+        background: linear-gradient(135deg, #000000 0%, #333333 100%);
+    }
+    
+    .center {
+        padding: 30px 25px;
+        margin: 0;
+        border-radius: 16px;
+    }
+    
+    h1 {
+        font-size: 1.8rem;
+        margin-bottom: 25px;
+    }
+    
+    .txt_field input {
+        padding: 14px 18px;
+        font-size: 16px;
+    }
+    
+    input[type="submit"] {
+        padding: 15px;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .center {
+        padding: 25px 20px;
+    }
+    
+    h1 {
+        font-size: 1.6rem;
+    }
+    
+    .txt_field input {
+        padding: 12px 16px;
+    }
+    
+    .txt_field label {
+        font-size: 0.8rem;
+        left: 16px;
+    }
+    
+    .signup_link {
+        font-size: 0.9rem;
+    }
+}
+
+/* Animation for form appearance */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.center {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* Focus states for accessibility */
+input:focus-visible {
+    outline: 2px solid #FF8C00;
+    outline-offset: 2px;
+}
+
+/* Loading state for submit button */
+input[type="submit"].loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* Error state for invalid fields */
+.txt_field input:invalid:not(:focus):not(:placeholder-shown) {
+    border-color: #dc3545;
+}
+
+.txt_field input:invalid:not(:focus):not(:placeholder-shown) + label {
+    color: #dc3545;
+}
+
+/* Custom scrollbar for webkit browsers */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #FF8C00, #FF4500);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #FF4500, #FF8C00);
+}
+
+
+.form-section {
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #ddd;
+      }
+      .section-title {
+        font-size: 18px;
+        color: #211d16;
+        margin-bottom: 15px;
+        font-weight: 600;
+      }
+      .checkbox-group {
+        display: flex;
+        align-items: center;
+        margin: 15px 0;
+      }
+      .checkbox-group input[type="checkbox"] {
+        margin-right: 10px;
+        transform: scale(1.2);
+        cursor: pointer;
+      }
+      .checkbox-group label {
+        margin: 0;
+        
+      }
+      .form-text {
+        font-size: 12px;
+        color: #666;
+        margin-top: 5px;
+        font-style: italic;
+      }
+      .error-message {
+        color: #e74c3c;
+        font-size: 12px;
+        margin-top: 5px;
+      }
+      select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 16px;
+        background: white;
+      }
+      select:focus {
+        border-color: #2691d9;
+        outline: none;
+      }

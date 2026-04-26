@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    :root { --accent: #F28123; --dark: #051922; --light-bg: #f9f9f9; }
+    
+    .product-details-section { padding: 100px 0; background: #fff; }
+    
+    /* Image Styling */
+    .detail-img-card { 
+        background: var(--light-bg); 
+        border-radius: 20px; 
+        padding: 30px; 
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+    }
+    .detail-img-card img { 
+        max-width: 100%; 
+        height: auto; 
+        border-radius: 15px;
+        transition: transform 0.5s ease;
+    }
+    .detail-img-card:hover img { transform: scale(1.05); }
+
+    /* Content Styling */
+    .product-name { font-size: 2.5rem; font-weight: 800; color: var(--dark); margin-bottom: 10px; }
+    .category-tag { 
+        display: inline-block; 
+        background: rgba(242, 129, 35, 0.1); 
+        color: var(--accent); 
+        padding: 5px 15px; 
+        border-radius: 50px; 
+        font-weight: 700; 
+        font-size: 0.8rem;
+        margin-bottom: 20px;
+    }
+    .price-tag { font-size: 2rem; font-weight: 700; color: var(--accent); margin-bottom: 25px; }
+    .price-tag span { font-size: 1rem; color: #888; font-weight: 400; }
+    
+    .description-text { color: #555; line-height: 1.8; margin-bottom: 30px; border-left: 3px solid var(--accent); padding-left: 20px; }
+    
+    /* Action Area */
+    .action-panel { background: var(--light-bg); padding: 25px; border-radius: 15px; margin-bottom: 30px; }
+    .qty-input { width: 80px; height: 50px; border-radius: 10px; border: 1px solid #ddd; text-align: center; font-weight: 700; }
+    .add-to-cart-btn { 
+        background: var(--accent); 
+        color: white; 
+        border: none; 
+        padding: 13px 40px; 
+        border-radius: 10px; 
+        font-weight: 700; 
+        transition: 0.3s;
+        flex-grow: 1;
+    }
+    .add-to-cart-btn:hover { background: var(--dark); transform: translateY(-2px); }
+    
+    /* Stock info */
+    .stock-status { font-size: 0.9rem; margin-top: 15px; }
+    .text-success-custom { color: #28a745; }
+    .text-danger-custom { color: #dc3545; }
+</style>
+
+<div class="breadcrumb-section breadcrumb-bg">
+    <div class="container text-center">
+        <div class="breadcrumb-text">
+            <p>Product Insight</p>
+            <h1>{{ product.name }}</h1>
+        </div>
+    </div>
+</div>
+
+<section class="product-details-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-5 mb-5 mb-lg-0">
+                <div class="detail-img-card">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                    {% else %}
+                        <img src="{% static 'assets/img/products/default.jpg' %}" alt="Default">
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-lg-7 pl-lg-5">
+                <span class="category-tag">{{ product.category.name }}</span>
+                <h2 class="product-name">{{ product.name }}</h2>
+                <div class="price-tag">{{ product.selling_price }} XAF <span>/ Per {{ product.unit }}</span></div>
+                
+                <div class="description-text">
+                    {{ product.description|linebreaks }}
+                </div>
+
+                <div class="action-panel">
+                    <form action="{% url 'add_to_cart' product.pk %}" method="POST" class="ajax-cart-form d-flex gap-3 align-items-center">
+                        {% csrf_token %}
+                        <div class="d-flex flex-column mr-3">
+                            <label class="small fw-bold mb-1">Quantity</label>
+                            <input type="number" name="quantity" value="1" min="1" max="{{ product.quantity }}" class="qty-input">
+                        </div>
+                        <div class="d-flex flex-column flex-grow-1">
+                            
+                            <button type="submit" class="add-to-cart-btn mt-2">
+                                <i class="fas fa-shopping-cart mr-2"></i> Add to Cart
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="stock-status">
+                        {% if product.quantity > product.min_stock_level %}
+                            <span class="text-success-custom"><i class="fas fa-check-circle"></i> In Stock ({{ product.quantity }} {{ product.unit }} available)</span>
+                        {% elif product.quantity > 0 %}
+                            <span class="text-warning"><i class="fas fa-exclamation-triangle"></i> Low Stock: only {{ product.quantity }} left!</span>
+                        {% else %}
+                            <span class="text-danger-custom"><i class="fas fa-times-circle"></i> Out of Stock</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+{% endblock %}

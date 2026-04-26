@@ -1,0 +1,126 @@
+{% extends "admin/dashboard_base.html" %}
+
+{% block title %}Product Management{% endblock %}
+
+{% block content %}
+<div class="row pt-4">
+    <div class="col-12">
+        <div id="printable-receipt" class="card shadow-sm border-0 p-4 p-md-5 bg-white">
+                
+                <div class="row mb-4 border-bottom pb-3">
+                    <div class="col-sm-7">
+                        <h2 class="fw-bold mb-1" style="color: #F28123;">MOM'SHOP</h2>
+                        <div class="seller-info small text-muted">
+                            <p class="mb-0"><i class="bi bi-geo-alt-fill me-1"></i> Makepe St Tropez, Douala</p>
+                            <p class="mb-0"><i class="bi bi-telephone-fill me-1"></i> +237 620 513 728</p>
+                            <p class="mb-0"><i class="bi bi-envelope-fill me-1"></i> momshop@gmail.com</p>
+                            <p class="mb-0"><strong>RCCM:</strong> RC/DLA/2025/B/1234</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-5 text-sm-end mt-3 mt-sm-0">
+                        <h4 class="fw-bold mb-0">OFFICIAL RECEIPT</h4>
+                        <span class="badge bg-success text-uppercase px-3">Fulfilled</span>
+                        <div class="mt-2 small">
+                            <p class="mb-0 text-muted">Processed by: <strong>{{ request.user.get_full_name|default:"Store Manager" }}</strong></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-6">
+                        <p class="text-muted mb-1 small text-uppercase fw-bold">Billed To:</p>
+                        <h6 class="mb-0">{{ order.customer.user.get_full_name }}</h6>
+                        <p class="mb-0 small text-muted">{{ order.town }}, {{ order.city }}</p>
+                        <p class="mb-0 small text-muted">Tel: {{ order.phone_number }}</p>
+                    </div>
+                    <div class="col-6 text-end">
+                        <p class="text-muted mb-1 small text-uppercase fw-bold">Order Details:</p>
+                        <h6 class="mb-0"><strong>ID:</strong> #{{ order.order_number }}</h6>
+                        <h6 class="mb-0"><strong>Date:</strong> {{ order.order_date|date:"d M Y" }}</h6>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-borderless">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="py-3">Item Description</th>
+                                <th class="py-3 text-center">Qty</th>
+                                <th class="py-3 text-end">Price</th>
+                                <th class="py-3 text-end">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order.items.all %}
+                            <tr class="border-bottom">
+                                <td class="py-3">
+                                    <span class="d-block fw-bold">{{ item.product.name }}</span>
+                                    {% if item.quantity == 0 %}
+                                        <small class="text-danger">Item Out of Stock</small>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3 text-center">{{ item.quantity }}</td>
+                                <td class="py-3 text-end">{{ item.price_at_purchase }}</td>
+                                <td class="py-3 text-end">
+                                    {% widthratio item.quantity 1 item.price_at_purchase %} XAF
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            <tr>
+                                <td><strong>Shipping</strong></td>
+                                <td></td>
+                                <td></td>
+                                <td class="py-3 text-end">
+                                    1000 XAF
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" class="text-end py-4">
+                                    <h5 class="mb-0 fw-bold">Amount Paid:</h5>
+                                </td>
+                                <td class="text-end py-4">
+                                    <h4 class="mb-0 fw-bold text-success">{{ order.total_amount }} XAF</h4>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div class="row mt-5">
+                    <div class="col-7 small text-muted">
+                        <h6 class="fw-bold text-dark">Notes & Terms:</h6>
+                        <p class="mb-1">1. Goods once sold are not returnable.</p>
+                        <p class="mb-0">2. This is a system-generated receipt for Order #{{ order.order_number }}.</p>
+                    </div>
+                    <div class="col-5 text-center mt-4 mt-sm-0">
+                        <div class="border-bottom mb-2 mx-auto" style="width: 150px; height: 50px;">
+                            </div>
+                        <p class="small text-muted mb-0">Authorized Signature</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 gap-3 no-print">
+                <button onclick="window.print()" class="btn btn-warning rounded-pill px-5 shadow fw-bold">
+                    <i class="bi bi-printer-fill me-2"></i> Print Receipt
+                </button>
+                <a href="{% url 'dashboard_home' %}" class="btn btn-outline-dark rounded-pill px-4">
+                    Return to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+        .no-print, .top-header-area, .footer-area, .breadcrumb-section { display: none !important; }
+        body { background-color: white !important; font-size: 12px; }
+        .card { border: none !important; }
+        .container { max-width: 100% !important; width: 100% !important; margin-top: 0 !important; }
+    }
+    .seller-info p { margin-bottom: 2px; }
+</style>
+{% endblock %}

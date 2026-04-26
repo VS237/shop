@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-150 mb-150">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div id="printable-receipt" class="card shadow-sm p-5 border-0">
+                <div class="receipt-header text-center mb-5">
+                    <h2 class="text-orange" style="color:#F28123;">MOM'SHOP</h2>
+                    <p class="text-muted">Thank you for your purchase, {{ order.customer.user.first_name }}!</p>
+                </div>
+
+                <div class="row mb-4">
+                  <div class="col-md-6">
+                      <strong>Order Number:</strong> #{{ order.order_number }}<br>
+                      <strong>Date:</strong> {{ order.order_date|date:"M d, Y" }}<br>
+                      <strong>Status:</strong> <span class="badge badge-success">Paid</span>
+                  </div>
+                  <div class="col-md-6 text-md-right">
+                      <strong>Ship To:</strong><br>
+                      {{ order.customer.user.get_full_name }}<br>
+                      {{ order.town }}, {{ order.city }}<br>
+                      <strong>Phone:</strong> {{ order.phone_number }}
+                  </div>
+              </div>
+
+                <table class="table borderless">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Product</th>
+                            <th class="text-center">Qty</th>
+                            <th class="text-center">Price</th>
+                            <th class="text-center">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order.items.all %}
+                        <tr>
+                            <td>{{ item.product.name }}</td>
+                            <td class="text-center">{{ item.quantity }}</td>
+                            <td class="text-center">{{ item.price_at_purchase }} XAF</td>
+                            <td class="text-center">
+                                {{ item.quantity|add:0 }} x {{ item.price_at_purchase }} 
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        <tr>
+                            <td><strong>Shipping</strong></td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-center">
+                                1000
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr class="h5">
+                            <td colspan="3" class="text-right"><strong>Grand Total:</strong></td>
+                            <td class="text-center text-orange"><strong>{{ order.total_amount }} XAF</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <div class="receipt-footer mt-5 text-center text-muted border-top pt-3">
+                    <p>Processed by Momshop</p>
+                    <p><small>This is a computer-generated receipt.</small></p>
+                </div>
+            </div>
+
+            <div class="text-center mt-4 no-print">
+                <button onclick="window.print()" class="btn btn-outline-dark px-4 py-2 fw-semibold">
+                    <i class="bi bi-printer me-2"></i> Print
+                </button>
+                <a href="{% url 'shop' %}" class="boxed-btn black">Back to Shop</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+        .no-print, .breadcrumb-section, .footer-area, .top-header-area {
+            display: none !important;
+        }
+        .mt-150 { margin-top: 20px !important; }
+        body { background: white; }
+        .card { border: none !important; box-shadow: none !important; }
+    }
+    .text-orange { color: #F28123 !important; }
+</style>
+{% endblock %}

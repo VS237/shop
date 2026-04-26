@@ -1,0 +1,40 @@
+{% extends "dashboard_base.html" %}
+{% load humanize %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5">
+                    <div class="mb-4">
+                        <i class="fas fa-check-circle text-success fa-5x"></i>
+                    </div>
+                    <h2 class="fw-bold">Report Generated</h2>
+                    <p class="text-muted">Daily summary for {{ today|date:"M d, Y" }} has been saved to archives.</p>
+                    
+                    <div class="row g-3 my-4">
+                        <div class="col-6">
+                            <div class="p-3 border rounded bg-light">
+                                <small class="text-uppercase text-muted d-block">Total Revenue</small>
+                                <span class="h4 fw-bold text-primary">{{ report.total_sales|intcomma }} XAF</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 border rounded bg-light">
+                                <small class="text-uppercase text-muted d-block">Items Sold</small>
+                                <span class="h4 fw-bold">{{ report.total_products_sold }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'sales_report_list' %}" class="btn btn-primary btn-lg">View All Reports</a>
+                        <a href="{% url 'seller_dashboard' %}" class="btn btn-outline-secondary">Back to Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

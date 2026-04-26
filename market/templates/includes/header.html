@@ -1,0 +1,109 @@
+{% load static %}
+<style>
+    .badge {
+        position: absolute;
+        top: 5px;
+        
+        background: #F28123;
+        color: white;
+        border-radius: 50%;
+        padding: 2px 6px;
+        font-size: 11px;
+        display: none; /* Hidden by default */
+    }
+		@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.4); }
+    100% { transform: scale(1); }
+}
+
+.pulse-animation {
+    animation: pulse 0.5s ease-in-out;
+}
+</style>
+
+<!--PreLoader-->
+    <div class="loader">
+        <div class="loader-inner">
+            <div class="circle"></div>
+        </div>
+    </div>
+<!--PreLoader Ends-->
+	
+	<!-- header -->
+	<div class="top-header-area" id="sticker">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-12 col-sm-12 text-center">
+					<div class="main-menu-wrap">
+						<!-- logo -->
+						<div class="site-logo">
+							<a href="{% url 'home'%}">
+								<img src="{% static 'assets/img/momshop.jpg'%} " alt="">
+							</a>
+						</div>
+						<!-- logo -->
+
+						<!-- menu start -->
+						<nav class="main-menu">
+							<ul>
+								<li class="current-list-item"><a href="{% url 'home'%}">Home</a>
+								</li>
+								<li><a href="{% url 'about'%}">About</a></li>
+								<li><a href="{% url 'contact'%}">Contact</a></li>
+								<li><a href="{% url 'shop'%}">Shop</a>
+									<ul class="sub-menu">
+										<li><a href="{% url 'shop'%}">Shop</a></li>
+										<li><a href="{% url 'cart'%}">Cart</a></li>
+									</ul>
+								</li>
+								<li>
+									 {% if user.is_authenticated %}
+										<a>{{ user.username }}</a>
+										<ul class="sub-menu">
+												{% if user.is_superuser or user.is_staff %}
+														<!-- Superuser/Staff Menu -->
+														<li><a href="{% url 'dashboard_home' %}">Admin Dashboard</a></li>
+														<li><a href="/admin/" target="_blank">Django Admin</a></li>
+														<li class="menu-divider"></li>
+														<li><a href="{% url 'logout' %}">Logout</a></li>
+													{% else %}
+														<!-- Regular User Menu -->	<li class="menu-divider"></li>
+														 <li><a href="{% url 'customer_dashboard' %}">Profile</a></li>
+														<li><a href="{% url 'logout' %}">Logout</a></li>
+													{% endif %}
+										</ul>			
+									{% else %}
+									
+										<li>
+											<a class="nav-link" href="{% url 'login' %}">Login</a>
+										</li>
+										<li>
+											<a class="nav-link" href="{% url 'register' %}">Register</a>
+										</li>
+									
+									{% endif %}
+								</li>
+								<li>
+									<div class="header-icons">
+										<a class="shopping-cart" href="{% url 'cart' %}" style="position: relative;">
+												<i class="fas fa-shopping-cart"></i>
+												<span id="nav-cart-count" class="badge">0</span>
+										</a>
+										<a class="mobile-hide search-bar-icon" href="#"><i class="fas fa-search"></i></a>
+									</div>
+								</li>
+								
+							</ul>
+						</nav>
+						<a class="mobile-show search-bar-icon" href="{% url 'cart' %}"><i class="fas fa-shopping-cart"></i>
+						<span id="nav-cart-count" class="badge">0</span>
+						</a>
+						<div class="mobile-menu"></div>
+						<!-- menu end -->
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- end header -->

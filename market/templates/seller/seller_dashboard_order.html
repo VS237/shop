@@ -1,0 +1,129 @@
+{% extends 'seller/base.html' %}
+{% block content %}
+<style>
+    @media (max-width: 768px) {
+    /* Hide the table header */
+    .custom-mobile-table thead {
+        display: none;
+    }
+
+    /* Force table to not behave like a table anymore */
+    .custom-mobile-table, 
+    .custom-mobile-table tbody, 
+    .custom-mobile-table tr, 
+    .custom-mobile-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .custom-mobile-table tr {
+        margin-bottom: 15px;
+        border: 1px solid #dee2e6;
+        border-radius: 12px;
+        background: #fff;
+        padding: 10px;
+    }
+
+    .custom-mobile-table td {
+        text-align: right;
+        padding-left: 50%;
+        position: relative;
+        border: none;
+        border-bottom: 1px solid #eee;
+    }
+
+    .custom-mobile-table td:last-child {
+        border-bottom: 0;
+        text-align: center;
+        padding-left: 0;
+        margin-top: 10px;
+    }
+
+    /* Label formatting */
+    .custom-mobile-table td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 10px;
+        width: 45%;
+        font-weight: bold;
+        text-align: left;
+        color: #6c757d;
+    }
+    
+    .w-100-mobile {
+        width: 100% !important;
+    }
+}
+</style>
+<div class="container mt-5 pt-5">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2 class="fw-bold"><i class="bi bi-speedometer2 me-2"></i>Order List</h2>
+            <p class="text-muted">Manage and fulfill pending customer orders.</p>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-dark text-white p-3">
+            <h5 class="mb-0">Pending Orders</h5>
+        </div>
+        <div class="table-responsive-custom">
+            <table class="table table-hover align-middle mb-0 custom-mobile-table">
+                <thead class="bg-light d-none d-md-table-header-group">
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Items Summary</th>
+                        <th>Total (XAF)</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in pending_orders %}
+                    <tr>
+                        <td data-label="Order ID"><span class="fw-bold">#{{ order.order_number }}</span></td>
+                        <td data-label="Customer">
+                            {{ order.customer.user.get_full_name }}<br>
+                            <small class="text-muted">{{ order.phone_number }}</small>
+                        </td>
+                        <td data-label="Items Summary">
+                            <ul class="list-unstyled mb-0 small">
+                                {% for item in order.items.all %}
+                                <li>{{ item.product.name }} (x{{ item.quantity }})</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                        <td data-label="Total (XAF)" class="fw-bold text-success">{{ order.total_amount }}</td>
+                        <td class="text-center">
+                            <div class="d-flex justify-content-center gap-2">
+                                <form action="{% url 'process_order' order.id %}" method="POST" onsubmit="return confirm('Process this order? Stock will be deducted.')">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-warning rounded-pill px-3 shadow-sm fw-bold btn-sm">
+                                        <i class="bi bi-box-seam me-1"></i> Process
+                                    </button>
+                                </form>
+
+                                <form action="{% url 'seller_delete_order' order.id %}" method="POST" onsubmit="return confirm('Are you sure you want to cancel and delete this order? This action cannot be undone.')">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline-danger rounded-pill px-3 btn-sm">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5">
+                            <i class="bi bi-inbox text-muted display-4"></i>
+                            <p class="mt-2">No pending orders found.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+</div>
+{% endblock %}

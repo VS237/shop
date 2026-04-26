@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | MOM'SHOP</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --brand-orange: #ff6b00; /* Vibrant Orange */
+            --brand-black: #121212;  /* Deep Matte Black */
+            --brand-white: #ffffff;
+            --muted-gray: #f4f4f4;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: rgb(42, 41, 41);
+            color: var(--brand-white);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .auth-card {
+            background: var(--brand-white);
+            border-radius: 20px;
+            overflow: hidden;
+            border: none;
+            color: var(--brand-black);
+            box-shadow: 0 25px 50px -12px rgba(255, 107, 0, 0.2);
+        }
+
+        .brand-sidebar {
+            background: rgb(0, 0, 0);
+            color: rgba(255, 255, 255, 0.568);
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .form-section {
+            padding: 50px;
+            background: var(--brand-white);
+        }
+
+        h1 { font-weight: 700; color: var(--brand-black); }
+        .orange-text { color: var(--brand-orange); }
+
+        .form-label { 
+            font-weight: 600; 
+            font-size: 0.85rem; 
+            color: #333; 
+            margin-bottom: 5px; 
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-control, .form-select {
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid var(--muted-gray);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--brand-orange);
+            box-shadow: none;
+            outline: none;
+        }
+
+        .section-header {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--brand-orange);
+            border-bottom: 2px solid var(--brand-orange);
+            padding-bottom: 5px;
+            margin: 30px 0 20px 0;
+            display: inline-block;
+        }
+
+        .btn-register {
+            background-color: var(--brand-black);
+            color: var(--brand-white);
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+
+        .btn-register:hover {
+            background-color: var(--brand-orange);
+            color: var(--brand-black);
+            transform: translateY(-3px);
+        }
+
+        .signup_link a {
+            color: var(--brand-orange);
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        /* Preloader Customization */
+        .loader .circle {
+            border-top-color: var(--brand-orange);
+        }
+
+        /* Toast Notifications Styling */
+        .custom-alert {
+            background-color: #121212 !important; /* Brand Black */
+            color: #ffffff !important;
+            border: none;
+            border-left: 5px solid #ff6b00 !important; /* Brand Orange */
+            border-radius: 12px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .custom-alert-error {
+            background-color: #000000 !important;
+            color: #ffffff !important;
+            border: none;
+            border-left: 5px solid #ff4444 !important; /* Error Red */
+            border-radius: 12px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        /* Make the close button look cleaner */
+        .btn-close-white {
+            filter: invert(1) grayscale(100%) brightness(200%);
+            opacity: 0.8;
+            font-size: 0.75rem;
+        }
+
+        /* Animation for the "Pop Out" effect */
+        .fade.show {
+            animation: slideIn 0.4s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .password-toggle {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #666;
+    transition: color 0.2s;
+    z-index: 10;
+}
+
+.password-toggle:hover {
+    color: var(--brand-orange);
+}
+
+/* Ensure the input doesn't overlap the icon text */
+#password {
+    padding-right: 45px;
+}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-xl-11">
+            <div class="auth-card row g-0">
+                <div class="col-lg-4 brand-sidebar d-none d-lg-flex">
+                    <div>
+                        <h2 class="display-5 fw-bold mb-0">MOM'SHOP</h2>
+                        <div style="width: 50px; height: 5px; background: rgba(255, 255, 255, 0.568); margin: 15px 0;"></div>
+                        <p class="lead fw-bold">Elevate Your Business Management.</p>
+                        <p class="small opacity-75">Global Concept. Professional Performance. Scalable Solutions.</p>
+                    </div>
+                </div>
+
+                <div class="col-lg-8 form-section">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h1>Create <span class="orange-text">Account</span></h1>
+                        <i class="fas fa-user-plus fa-2x text-muted"></i>
+                    </div>
+
+                    <div class="notification-wrapper position-fixed top-0 start-50 translate-middle-x mt-3" style="z-index: 1080; width: 90%; max-width: 400px;">
+    
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert custom-alert alert-dismissible fade show shadow-lg" role="alert">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <span>{{ message }}</span>
+                                    </div>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+
+                        {% if form.errors %}
+                            {% for field in form %}
+                                {% for error in field.errors %}
+                                    <div class="alert custom-alert-error alert-dismissible fade show shadow-lg" role="alert">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                            <span><strong>{{ field.label }}:</strong> {{ error }}</span>
+                                        </div>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endfor %}
+                            {% for error in form.non_field_errors %}
+                                <div class="alert custom-alert-error alert-dismissible fade show shadow-lg" role="alert">
+                                    <i class="fas fa-exclamation-circle me-2"></i> {{ error }}
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        <div class="section-header">01. Account Details</div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Username</label>
+                                <input type="text" name="username" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Email Address</label>
+                                <input type="email" name="email" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Password</label>
+                                <div class="position-relative">
+                                    <input type="password" name="password" class="form-control" id="password" required style="padding-right: 45px;">
+                                    <span class="password-toggle" onclick="togglePassword()">
+                                        <i class="fas fa-eye" id="toggleIcon"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Confirm Password</label>
+                                <div class="position-relative">
+                                    <input type="password" name="confirm_password" class="form-control" id="confirm_password" required style="padding-right: 45px;">
+                                    <span class="password-toggle" onclick="toggleConfirmPassword()">
+                                        <i class="fas fa-eye" id="confirmToggleIcon"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="section-header">02. Owner Information</div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">First Name</label>
+                                <input type="text" name="first_name" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Last Name</label>
+                                <input type="text" name="last_name" class="form-control" required>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">Phone Number</label>
+                                <input type="tel" name="phone" id="phone" class="form-control" placeholder="+237" required>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">Address</label>
+                                <input type="text" name="address" id="address" class="form-control" placeholder="Neighbourhood" required>
+                            </div>
+                        </div>
+
+                        <div class="section-header">03. Profile</div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">City</label>
+                                <select name="city" class="form-select" required>
+                                    <option value="">Select City</option>
+                                    <option value="Douala" {% if form.city.value == 'Douala' %}selected{% endif %}>Douala</option>
+                                    <option value="Yaoundé" {% if form.city.value == 'Yaoundé' %}selected{% endif %}>Yaoundé</option>
+                                    <option value="Bamenda" {% if form.city.value == 'Bamenda' %}selected{% endif %}>Bamenda</option>
+                                    <option value="Bafoussam" {% if form.city.value == 'Bafoussam' %}selected{% endif %}>Bafoussam</option>
+                                    <option value="Garoua" {% if form.city.value == 'Garoua' %}selected{% endif %}>Garoua</option>
+                                    <option value="Maroua" {% if form.city.value == 'Maroua' %}selected{% endif %}>Maroua</option>
+                                    <option value="Ngaoundéré" {% if form.city.value == 'Ngaoundéré' %}selected{% endif %}>Ngaoundéré</option>
+                                    <option value="Kumba" {% if form.city.value == 'Kumba' %}selected{% endif %}>Kumba</option>
+                                    <option value="Limbe" {% if form.city.value == 'Limbe' %}selected{% endif %}>Limbe</option>
+                                    <option value="Buea" {% if form.city.value == 'Buea' %}selected{% endif %}>Buea</option>
+                                    <option value="Ebolowa" {% if form.city.value == 'Ebolowa' %}selected{% endif %}>Ebolowa</option>
+                                    <option value="Bertoua" {% if form.city.value == 'Bertoua' %}selected{% endif %}>Bertoua</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Account Type</label>
+                                <select name="customer_type" class="form-select" required>
+                                    <option value="occasional" {% if form.customer_type.value == 'occasional' %}selected{% endif %}>Occasional Customer</option>
+                                    <option value="regular" {% if form.customer_type.value == 'regular' %}selected{% endif %}>Regular Customer</option>
+                                    <option value="wholesale" {% if form.customer_type.value == 'wholesale' %}selected{% endif %}>Wholesale Customer</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-register w-100 mt-5">
+                            Initialize Registration <i class="fas fa-chevron-right ms-2"></i>
+                        </button>
+
+                        <div class="signup_link text-center mt-4">
+                            Already part of FUTURE? <a href="{% url 'login' %}">Sign In</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+  <script>
+      // Simple password strength indicator
+      document.getElementById('password').addEventListener('input', function(e) {
+        const password = e.target.value;
+        const strengthBar = document.getElementById('password-strength-bar');
+        let strength = 0;
+        
+        if (password.length >= 8) strength += 1;
+        if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength += 1;
+        if (password.match(/\d/)) strength += 1;
+        if (password.match(/[^a-zA-Z\d]/)) strength += 1;
+        
+        strengthBar.className = 'strength-bar';
+        if (password.length > 0) {
+          if (strength <= 1) strengthBar.classList.add('strength-weak');
+          else if (strength <= 2) strengthBar.classList.add('strength-medium');
+          else strengthBar.classList.add('strength-strong');
+        }
+      });
+
+      // Ensure labels stay up when input has content (for browser autofill)
+      document.addEventListener('DOMContentLoaded', function() {
+        const inputs = document.querySelectorAll('.txt_field input, .txt_field textarea, .txt_field select');
+        inputs.forEach(input => {
+          if (input.value || (input.tagName === 'SELECT' && input.selectedIndex > 0)) {
+            input.classList.add('has-value');
+          }
+          
+          input.addEventListener('input', function() {
+            if (this.value || (this.tagName === 'SELECT' && this.selectedIndex > 0)) {
+              this.classList.add('has-value');
+            } else {
+              this.classList.remove('has-value');
+            }
+          });
+
+          input.addEventListener('change', function() {
+            if (this.value || (this.tagName === 'SELECT' && this.selectedIndex > 0)) {
+              this.classList.add('has-value');
+            } else {
+              this.classList.remove('has-value');
+            }
+          });
+        });
+
+        // Phone number formatting for Cameroon numbers
+        const phoneInput = document.querySelector('input[name="phone"]');
+        phoneInput.addEventListener('input', function(e) {
+          let value = e.target.value.replace(/\D/g, '');
+          
+          if (value.startsWith('237')) {
+            value = value.substring(3);
+          }
+          
+          if (value.length > 0) {
+            if (value.length <= 2) {
+              e.target.value = '+237' + value;
+            } else if (value.length <= 5) {
+              e.target.value = '+237' + value.substring(0, 2) + value.substring(2);
+            } else if (value.length <= 8) {
+              e.target.value = '+237' + value.substring(0, 2) + value.substring(2, 5) + value.substring(5);
+            } else {
+              e.target.value = '+237' + value.substring(0, 2) + value.substring(2, 5) + value.substring(5, 8) + value.substring(8);
+            }
+          }
+        });
+      });
+
+      // Form validation before submission
+      document.querySelector('form').addEventListener('submit', function(e) {
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.querySelector('input[name="confirm_password"]').value;
+        
+        if (password !== confirmPassword) {
+          e.preventDefault();
+          alert('Passwords do not match!');
+          return false;
+        }
+
+        const phone = document.querySelector('input[name="phone"]').value;
+        const phoneRegex = /^(\+237|237)?[6-9]\d{8}$/;
+        const cleanPhone = phone.replace(/\s/g, '');
+        
+        if (!phoneRegex.test(cleanPhone)) {
+          e.preventDefault();
+          alert('Please enter a valid Cameroonian phone number (e.g., +2376XX XXX XXX or 6XX XXX XXX)');
+          return false;
+        }
+      });
+
+      document.addEventListener('click', function (event) {
+          // Check if the clicked element is a close button or inside one
+          if (event.target.classList.contains('btn-close') || event.target.closest('.btn-close')) {
+              const alert = event.target.closest('.alert');
+              if (alert) {
+                  // Apply a quick fade out before removing
+                  alert.style.transition = "opacity 0.3s ease";
+                  alert.style.opacity = "0";
+                  setTimeout(() => alert.remove(), 300);
+              }
+          }
+      });
+
+      function togglePassword() {
+        const passwordInput = document.getElementById('password');
+        const toggleIcon = document.getElementById('toggleIcon');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.classList.remove('fa-eye');
+            toggleIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
+        }
+    }
+
+    function toggleConfirmPassword() {
+        const confirmInput = document.getElementById('confirm_password');
+        const confirmIcon = document.getElementById('confirmToggleIcon');
+        
+        if (confirmInput.type === 'password') {
+            confirmInput.type = 'text';
+            confirmIcon.classList.remove('fa-eye');
+            confirmIcon.classList.add('fa-eye-slash');
+        } else {
+            confirmInput.type = 'password';
+            confirmIcon.classList.remove('fa-eye-slash');
+            confirmIcon.classList.add('fa-eye');
+        }
+    }
+    </script>
+</body>
+</html>

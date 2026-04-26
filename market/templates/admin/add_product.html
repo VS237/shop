@@ -1,0 +1,251 @@
+{% extends "admin/dashboard_base.html" %}
+
+{% block title %}Product Management{% endblock %}
+
+{% block content %}    
+
+<div class="row pt-4">
+    <div class="card">
+        <div class="card-header bg-success text-white row pt-4">
+            <h4 class="mb-2">
+                <i class="fas fa-{% if product %}edit{% else %}plus{% endif %}"></i>
+                Add Product
+            </h4>
+        </div>
+        
+        <div class="card-body">
+            {% if messages %}
+            <div class="messages mb-3">
+                {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+    <form method="POST" id="productForm" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <!-- Basic Information -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h5 class="border-bottom pb-2">Basic Information</h5>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Product Name *</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                    <div class="text-danger small">{{ form.name.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Category Name *</label>
+                    {{ form.category_name }}
+                    <div class="form-text">{{ form.category_name.help_text }}</div>
+                    {% if form.category_name.errors %}
+                    <div class="text-danger small">{{ form.category_name.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+                    
+            <div class="col-md-12">
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                    <div class="text-danger small">{{ form.description.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            </div>
+
+            <!-- Pricing Information -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h5 class="border-bottom pb-2">Pricing Information</h5>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Buying Price (XAF) *</label>
+                        {{ form.buying_price }}
+                        {% if form.buying_price.errors %}
+                        <div class="text-danger small">{{ form.buying_price.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Selling Price (XAF) *</label>
+                        {{ form.selling_price }}
+                        {% if form.selling_price.errors %}
+                        <div class="text-danger small">{{ form.selling_price.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Unit *</label>
+                        {{ form.unit }}
+                        <div class="form-text">e.g., kg, piece, liter, pack</div>
+                        {% if form.unit.errors %}
+                        <div class="text-danger small">{{ form.unit.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inventory & Supplier Information -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h5 class="border-bottom pb-2">Inventory & Supplier</h5>
+                </div>
+                
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Supplier Name</label>
+                    {{ form.supplier_name }}
+                    <div class="form-text">{{ form.supplier_name.help_text }}</div>
+                    {% if form.supplier_name.errors %}
+                    <div class="text-danger small">{{ form.supplier_name.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Supplier Phone</label>
+                    {{ form.supplier_phone }}
+                    <div class="form-text">Phone number for the supplier</div>
+                    {% if form.supplier_phone.errors %}
+                    <div class="text-danger small">{{ form.supplier_phone.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Initial Stock Quantity</label>
+                    {{ form.quantity }}
+                    <div class="form-text">Set initial stock (optional)</div>
+                    {% if form.quantity.errors %}
+                    <div class="text-danger small">{{ form.quantity.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Minimum Stock Level *</label>
+                    {{ form.min_stock_level }}
+                    <div class="form-text">Alert when stock falls below this level</div>
+                    {% if form.min_stock_level.errors %}
+                    <div class="text-danger small">{{ form.min_stock_level.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>           
+
+        <!-- Image Upload Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h5 class="border-bottom pb-2">Product Image</h5>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Product Image</label>
+                    {{ form.image }}
+                    <div class="form-text">{{ form.image.help_text }}</div>
+                    {% if form.image.errors %}
+                    <div class="text-danger small">{{ form.image.errors }}</div>
+                    {% endif %}
+                    
+                    
+                </div>
+            </div>
+    
+                                
+
+            <!-- Action Buttons -->
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="{% url 'manage_products' %}" class="btn btn-secondary me-md-2">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+                
+                {% if product %}
+                <button type="submit" name="save_and_continue" class="btn btn-info me-md-2">
+                    <i class="fas fa-save"></i> Save & Continue Editing
+                </button>
+                {% else %}
+                <button type="submit" name="save_and_add_another" class="btn btn-info me-md-2">
+                    <i class="fas fa-plus"></i> Save & Add Another
+                </button>
+                {% endif %}
+                
+                <button type="submit" name="save" class="btn btn-success">
+                    <i class="fas fa-check"></i> Save Product
+                </button>
+            </div>
+    </form>
+    </div>
+</div>
+
+            
+            </div>
+        </div>
+    </div>
+
+    
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Auto-calculate profit margin
+        document.getElementById('id_buying_price').addEventListener('input', calculateProfit);
+        document.getElementById('id_selling_price').addEventListener('input', calculateProfit);
+        
+        function calculateProfit() {
+            const buyingPrice = parseFloat(document.getElementById('id_buying_price').value) || 0;
+            const sellingPrice = parseFloat(document.getElementById('id_selling_price').value) || 0;
+            
+            if (buyingPrice > 0 && sellingPrice > 0) {
+                const profit = sellingPrice - buyingPrice;
+                const margin = ((profit / buyingPrice) * 100).toFixed(2);
+                
+                // Display profit information
+                let profitInfo = document.getElementById('profitInfo');
+                if (!profitInfo) {
+                    profitInfo = document.createElement('div');
+                    profitInfo.id = 'profitInfo';
+                    profitInfo.className = 'alert alert-info mt-2';
+                    document.getElementById('id_selling_price').parentNode.appendChild(profitInfo);
+                }
+                
+                if (profit > 0) {
+                    profitInfo.innerHTML = `
+                        <strong>Profit:</strong> ${profit.toFixed(2)} XAF | 
+                        <strong>Margin:</strong> ${margin}%
+                    `;
+                    profitInfo.className = 'alert alert-info mt-2';
+                } else {
+                    profitInfo.innerHTML = '<strong>Warning:</strong> No profit margin!';
+                    profitInfo.className = 'alert alert-warning mt-2';
+                }
+            }
+        }
+        
+        // Calculate on page load if values exist
+        document.addEventListener('DOMContentLoaded', calculateProfit);
+    </script>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends "admin/dashboard_base.html" %}
+{% load humanize %}
+
+{% block title %}Sales Reports History{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-block justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold"><i class="fas fa-history me-2 text-success"></i>Sales Archives</h3>
+        <a href="{% url 'dashboard_home' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+        </a>
+        
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">Date / ID</th>
+                            <th>Gross Sales</th>
+                            <th>Credit Issued</th>
+                            <th class="text-success">Net Cash Flow</th>
+                            <th class="text-center">Orders</th>
+                            <th class="text-center">Items</th>
+                            <th class="pe-4 text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for report in reports %}
+                        <tr>
+                            <td class="ps-4">
+                                <div class="fw-bold">{{ report.report_date|date:"D, M d, Y" }}</div>
+                                <span class="badge bg-light text-muted border">#REP-{{ report.id }}</span>
+                            </td>
+
+                            <td>
+                                <div class="fw-bold text-dark">{{ report.total_sales|intcomma }} XAF</div>
+                                <small class="text-muted">Total Activity</small>
+                            </td>
+
+                            <td>
+                                <div class="text-danger fw-bold">
+                                    - {{ report.credit_sales_total|intcomma }} XAF
+                                </div>
+                                <small class="text-muted">Customer Debt</small>
+                            </td>
+
+                            <td>
+                                <div class="badge bg-success-subtle text-success fs-6 p-2">
+                                    {{ report.net_cash_collected|intcomma }} XAF
+                                </div>
+                                <div class="mt-1" style="font-size: 0.75rem;">
+                                    <span class="text-muted">Cash: {{ report.cash_sales|intcomma }}</span> | 
+                                    <span class="text-muted">MoMo: {{ report.mobile_money_sales|intcomma }}</span>
+                                </div>
+                            </td>
+
+                            <td class="text-center">
+                                <div class="fw-bold">{{ report.orders_processed }}</div>
+                                <small class="text-muted">({{ report.pending_order_value|intcomma }} Pending)</small>
+                            </td>
+
+                            <td class="text-center">
+                                <span class="badge rounded-pill bg-dark">{{ report.total_products_sold }}</span>
+                            </td>
+
+                            <td class="pe-4 text-end">
+                                <div class="btn-group">
+                                    <a href="{% url 'print_sales_report' report.id %}" target="_blank" class="btn btn-sm btn-outline-success" title="Print Invoice">
+                                        <i class="fas fa-print"></i>
+                                    </a>
+                                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#reportModal{{ report.id }}">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5">
+                                <div class="opacity-50">
+                                    <i class="fas fa-file-invoice-dollar fa-3x mb-3"></i>
+                                    <p>No reports found. Complete some sales to generate archives.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5 mt-3">
+        <form action="{% url 'delete_all_reports' %}" method="POST" onsubmit="return confirm('ARE YOU SURE? This will permanently delete ALL your reports records and cannot be undone.');">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline-danger">
+            <i class="fas fa-trash-alt me-2"></i>Clear All Reports
+        </button>
+        </form>
+        </div>
+</div>
+{% endblock %}

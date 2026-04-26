@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="breadcrumb-section breadcrumb-bg">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 offset-lg-2 text-center">
+                <div class="breadcrumb-text">
+                    <p>Transaction Completed</p>
+                    <h1>Success!</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container mt-150 mb-150">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 text-center">
+            <div class="order-success-content">
+                <i class="fas fa-check-circle fa-5x mb-4" style="color: #F28123;"></i>
+                <h2 class="pb-3">Your order has been placed!</h2>
+                
+                <p class="lead">Thank you for shopping with us. Your order number is <strong>#{{ order_number }}</strong>.</p>
+                <p>We have received your order and are currently processing it. You can view or print your detailed receipt below.</p>
+                
+                <div class="cart-buttons mt-5">
+                    <a href="{% url 'print_receipt' order_number %}" class="boxed-btn">View Receipt</a>
+                    <a href="{% url 'shop' %}" class="boxed-btn black">Continue Shopping</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

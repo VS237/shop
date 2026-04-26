@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Print Report #{{ report.id }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: white; font-size: 13px; color: #333; }
+        .print-header { border-bottom: 3px double #000; margin-bottom: 30px; padding-bottom: 15px; }
+        .section-title { background: #f8f9fa; padding: 5px 10px; border-left: 4px solid #000; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; }
+        .total-row { font-size: 16px; background-color: #eee !important; }
+        .text-danger { color: #d9534f !important; }
+        
+        @media print {
+            .no-print { display: none; }
+            body { margin: 0; padding: 10mm; }
+            .table td, .table th { padding: 0.5rem !important; }
+        }
+    </style>
+</head>
+<body onload="window.print()">
+    <div class="container">
+        <div class="no-print d-flex justify-content-between align-items-center my-4 p-3 bg-light rounded border">
+            <div>
+                <h5 class="mb-0">Print Preview</h5>
+                <small class="text-muted">Ensure "Background Graphics" is enabled in print settings.</small>
+            </div>
+            <div>
+                <button onclick="window.print()" class="btn btn-primary btn-sm"><i class="fas fa-print"></i> Print Report</button>
+                <button onclick="window.close()" class="btn btn-outline-secondary btn-sm">Close</button>
+            </div>
+        </div>
+
+        <div class="print-header text-center">
+            <h1 class="fw-bold mb-1">FUTURE RETAIL MANAGEMENT</h1>
+            <h4 class="text-muted mb-3">DAILY FINANCIAL STATEMENT</h4>
+            <div class="row mt-4">
+                <div class="col-4 text-start">
+                    <p class="mb-0 small">Report ID: <strong>#REP-{{ report.id }}</strong></p>
+                    <p class="mb-0 small">Date: <strong>{{ report.report_date|date:"l, d F Y" }}</strong></p>
+                </div>
+                <div class="col-4 text-center">
+                    </div>
+                <div class="col-4 text-end">
+                    <p class="mb-0 small">Seller: <strong>{{ report.generated_by.user.get_full_name|default:report.generated_by }}</strong></p>
+                    <p class="mb-0 small">Status: <span class="badge border text-dark">FINALIZED</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-7">
+                <div class="section-title">Revenue & Cash Flow</div>
+                <table class="table table-bordered align-middle">
+                    <tr>
+                        <td class="bg-light">Cash Sales</td>
+                        <td class="text-end">{{ report.cash_sales|floatformat:0 }} XAF</td>
+                    </tr>
+                    <tr>
+                        <td class="bg-light">Mobile Money (MoMo)</td>
+                        <td class="text-end">{{ report.mobile_money_sales|floatformat:0 }} XAF</td>
+                    </tr>
+                    <tr class="table-info fw-bold">
+                        <td>NET CASH ON HAND</td>
+                        <td class="text-end">{{ report.net_cash_collected|floatformat:0 }} XAF</td>
+                    </tr>
+                    <tr>
+                        <td class="bg-light text-danger">Customer Credit Issued</td>
+                        <td class="text-end text-danger">+ {{ report.credit_sales_total|floatformat:0 }} XAF</td>
+                    </tr>
+                    <tr class="total-row fw-bold">
+                        <td>GROSS SALES TOTAL</td>
+                        <td class="text-end">{{ report.total_sales|floatformat:0 }} XAF</td>
+                    </tr>
+                </table>
+                
+                {% if variance != 0 %}
+                <div class="alert alert-warning py-2 small">
+                    <strong>Note:</strong> Accounting variance of {{ variance|floatformat:0 }} XAF detected.
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="col-5">
+                <div class="section-title">Operational Metrics</div>
+                <table class="table table-bordered">
+                    <tr>
+                        <td class="bg-light">Total Items Sold</td>
+                        <td class="text-end fw-bold">{{ report.total_products_sold }}</td>
+                    </tr>
+                    <tr>
+                        <td class="bg-light">Customer Visits</td>
+                        <td class="text-end fw-bold">{{ report.total_customers }}</td>
+                    </tr>
+                    <tr>
+                        <td class="bg-light">App Orders Processed</td>
+                        <td class="text-end fw-bold">{{ report.orders_processed }}</td>
+                    </tr>
+                    <tr>
+                        <td class="bg-light">Unpaid Orders Value</td>
+                        <td class="text-end text-muted">{{ report.pending_order_value|floatformat:0 }} XAF</td>
+                    </tr>
+                </table>
+
+                <div class="mt-4 p-3 border rounded">
+                    <h6>Signature Section</h6>
+                    <br><br>
+                    <div class="d-flex justify-content-between small">
+                        <span>_________________<br>Seller Signature</span>
+                        <span>_________________<br>Manager Approval</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer mt-5 pt-4 text-center border-top">
+            <p class="small text-muted mb-0">FUTURE Management Platform - "Total Control Over Your Business"</p>
+            <p class="small text-muted">Document printed on: {% now "Y-m-d \a\t H:i" %}</p>
+        </div>
+    </div>
+</body>
+</html>

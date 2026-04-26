@@ -1,0 +1,170 @@
+{% extends "admin/dashboard_base.html" %}
+
+{% block title %}Product Management{% endblock %}
+
+{% block content %}
+<div class="row pt-4">
+    <div class="col-12">
+        <h1 class="mb-4">Users & Sellers Management</h1>
+        
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-plus"></i> Add a Seller
+                    </h4>
+                </div>
+                
+                <div class="card-body">
+                    {% if messages %}
+                    <div class="messages mb-3">
+                        {% for message in messages %}
+                        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2">Account Information</h5>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Username *</label>
+                                    {{ form.username }}
+                                    {% if form.username.errors %}
+                                    <div class="text-danger small">{{ form.username.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Email *</label>
+                                    {{ form.email }}
+                                    {% if form.email.errors %}
+                                    <div class="text-danger small">{{ form.email.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">First Name *</label>
+                                    {{ form.first_name }}
+                                    {% if form.first_name.errors %}
+                                    <div class="text-danger small">{{ form.first_name.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Last Name *</label>
+                                    {{ form.last_name }}
+                                    {% if form.last_name.errors %}
+                                    <div class="text-danger small">{{ form.last_name.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Password *</label>
+                                    {{ form.password }}
+                                    <div class="form-text">{{ form.password.help_text }}</div>
+                                    {% if form.password.errors %}
+                                    <div class="text-danger small">{{ form.password.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Confirm Password *</label>
+                                    {{ form.confirm_password }}
+                                    {% if form.confirm_password.errors %}
+                                    <div class="text-danger small">{{ form.confirm_password.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2">Seller Information</h5>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Phone Number *</label>
+                                    {{ form.phone }}
+                                    {% if form.phone.errors %}
+                                    <div class="text-danger small">{{ form.phone.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">CNI Number *</label>
+                                    {{ form.id_card_number }}
+                                    {% if form.id_card_number.errors %}
+                                    <div class="text-danger small">{{ form.id_card_number.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Monthly Salary (XAF) *</label>
+                                    {{ form.salary }}
+                                    {% if form.salary.errors %}
+                                    <div class="text-danger small">{{ form.salary.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Hire Date *</label>
+                                    {{ form.hire_date }}
+                                    {% if form.hire_date.errors %}
+                                    <div class="text-danger small">{{ form.hire_date.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Address *</label>
+                                    {{ form.address }}
+                                    {% if form.address.errors %}
+                                    <div class="text-danger small">{{ form.address.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'manage_sellers' %}" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Create Seller
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

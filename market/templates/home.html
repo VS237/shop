@@ -1,0 +1,266 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- home page slider -->
+	<div class="homepage-slider">
+		<!-- single home slider -->
+		<div class="single-homepage-slider homepage-bg-1">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12 col-lg-7 offset-lg-1 ">
+						<div class="hero-text">
+							<div class="hero-text-tablecell">
+								<p class="subtitle">Fresh & Cheap</p>
+								<h1>Welcome to Mom'shop</h1>
+								<div class="hero-btns">
+									<a href="{% url 'shop' %}" class="boxed-btn ">Visit Shop</a>
+									<a href="{% url 'contact' %}" class="bordered-btn">Contact Us</a>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- single home slider -->
+		<div class="single-homepage-slider homepage-bg-2">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-10 offset-lg-1 text-center">
+						<div class="hero-text">
+							<div class="hero-text-tablecell">
+								<p class="subtitle">Fresh Everyday</p>
+								<h1>Bio Aliments For You</h1>
+								<div class="hero-btns">
+									<a href="{% url 'shop' %}" class="boxed-btn">Visit Shop</a>
+									<a href="{% url 'contact' %}" class="bordered-btn">Contact Us</a>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- single home slider -->
+		<div class="single-homepage-slider homepage-bg-3">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-10 offset-lg-1 text-right">
+						<div class="hero-text">
+							<div class="hero-text-tablecell">
+								<p class="subtitle">Mega Sale Going On!</p>
+								<h1>Cheap & Satisfactory</h1>
+								<div class="hero-btns">
+									<a href="{% url 'shop' %}" class="boxed-btn">Visit Shop</a>
+									<a href="{% url 'contact' %}" class="bordered-btn">Contact Us</a>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- end home page slider -->
+
+	<!-- features list section -->
+	<div class="list-section pt-80 pb-80">
+		<div class="container">
+
+			<div class="row">
+				<div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
+					<div class="list-box d-flex align-items-center">
+						<div class="list-icon">
+							<i class="fas fa-shipping-fast"></i>
+						</div>
+						<div class="content">
+							<h3>Flexible Shipping</h3>
+							<p>We deliver anywhere you are</p>
+						</div>
+					</div>
+				</div>
+				<div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
+					<div class="list-box d-flex align-items-center">
+						<div class="list-icon">
+							<i class="fas fa-phone-volume"></i>
+						</div>
+						<div class="content">
+							<h3>24/7 Support</h3>
+							<p>Get support all day</p>
+						</div>
+					</div>
+				</div>
+				<div class="col-lg-4 col-md-6">
+					<div class="list-box d-flex justify-content-start align-items-center">
+						<div class="list-icon">
+							<i class="fas fa-sync"></i>
+						</div>
+						<div class="content">
+							<h3>Quality Product</h3>
+							<p>Your satisfaction our priority!</p>
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+	<!-- end features list section -->
+
+	<!-- product section -->
+	<div class="product-section mt-150 mb-150">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-8 offset-lg-2 text-center">
+					<div class="section-title">	
+						<h3><span class="orange-text">Our</span> Products</h3>
+						<p>Visit our bio and fresh products. You can add a product to cart or directly place an order. It's as you wish, you the Boss.</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="search-filter-bar">
+        <form method="GET" action="." class="row g-3 align-items-center">
+            <div class="col-lg-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                    <input type="text" name="q" class="form-control border-start-0" placeholder="Search products..." value="{{ query }}">
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <select name="category" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.name|slugify }}" {% if current_category == cat.name|slugify %}selected{% endif %}>
+                        {{ cat.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-lg-3 d-flex gap-2">
+                <button type="submit" class="btn btn-orange w-100">Search</button>
+                {% if query or current_category %}
+                <a href="." class="btn btn-outline-secondary"><i class="fas fa-undo"></i></a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <div class="row mt-5">
+        {% for product in products %}
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card product-card">
+                <div class="img-container">
+                    <span class="badge-category">{{ product.category.name }}</span>
+                    <a href="{% url 'product_details' product.pk %}">
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                    </a>
+                </div>
+                <div class="card-body text-center">
+                    <h5 class="fw-bold">{{ product.name }}</h5>
+                    <p class="text-muted small">{{ product.description|truncatechars:60 }}</p>
+                    <h4 class="text-orange mb-3" style="color: var(--main-orange);">
+                        {{ product.selling_price }} XAF <small class="text-muted" style="font-size: 14px;">/ {{ product.unit }}</small>
+                    </h4>
+                    <a href="{% url 'add_to_cart' product.id %}" class="btn btn-orange add-to-cart-ajax"><i class="fas fa-shopping-cart me-2"></i>Add to Cart</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="fas fa-box-open fa-4x text-muted mb-3"></i>
+            <h3>No products found</h3>
+            <p>Try adjusting your search or category filters.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if products.has_other_pages %}
+    <div class="row">
+        <div class="col-lg-12 text-center">
+            <div class="pagination-wrap">
+                <ul>
+                    {% if products.has_previous %}
+                    <li><a href="?page={{ products.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}">Prev</a></li>
+                    {% endif %}
+
+                    {% for i in products.paginator.page_range %}
+                        {% if products.number == i %}
+                            <li><a class="active" href="#">{{ i }}</a></li>
+                        {% elif i > products.number|add:'-3' and i < products.number|add:'3' %}
+                            <li><a href="?page={{ i }}{% if query %}&q={{ query }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}">{{ i }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if products.has_next %}
+                    <li><a href="?page={{ products.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}">Next</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+		</div>
+	</div>
+	<!-- end product section -->
+
+	
+	
+	<!-- advertisement section -->
+	<div class="abt-section mb-150">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-6 col-md-12">
+					<div class="abt-bg">
+						<a href="https://www.youtube.com/watch?v=DBLlFWYcIGQ" class="video-play-btn popup-youtube"><i class="fas fa-play"></i></a>
+					</div>
+				</div>
+				<div class="col-lg-6 col-md-12">
+					<div class="abt-text">
+						<p class="top-sub">Established 2022</p>
+						<h2>Welcome to <span class="orange-text">Mom’shop</span></h2>
+						<p>Since our opening in 2022, Mom’shop has been dedicated to bringing high-quality products directly to your doorstep. We believe in providing a seamless shopping experience with a touch of care that only a "Mommy Shop" can offer.</p>
+						<p>Whether you're looking for daily essentials or special treats, our curated selection is managed with precision and passion. We are more than just a POS; we are your community partner in Douala.</p>
+						<a href="{% url 'about' %}" class="boxed-btn mt-4">know more</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- end advertisement section -->
+
+	<!-- logo carousel -->
+	<div class="logo-carousel-section">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-12">
+					<div class="logo-carousel-inner">
+						<div class="single-logo-item">
+							<img src="{% static 'assets/img/company-logos/future.png' %}" alt="">
+						</div>
+						<div class="single-logo-item">
+							<img src="{% static 'assets/img/company-logos/momlogo.png' %}" alt="">
+						</div>
+						<div class="single-logo-item">
+							<img src="{% static 'assets/img/company-logos/future.png' %}" alt="">
+						</div>
+						<div class="single-logo-item">
+							<img src="{% static 'assets/img/company-logos/momlogo.png' %}" alt="">
+						</div>
+						<div class="single-logo-item">
+							<img src="{% static 'assets/img/company-logos/future.png' %}" alt="">
+						</div>
+						<div class="single-logo-item">
+							<img src="{% static 'assets/img/company-logos/momlogo.png' %}" alt="">
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- end logo carousel -->
+
+{% endblock %}

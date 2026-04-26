@@ -1,0 +1,154 @@
+{% extends "admin/dashboard_base.html" %}
+
+{% block title %}Sales Overview{% endblock %}
+
+{% block content %}
+<div class="row pt-4">
+    
+    <div class="col-12">
+        <h1 class="mb-4">Overview Dashboard</h1>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col me-2">
+                        <div class="text-xs fw-bold text-primary text-uppercase mb-1">
+                            Total Sales (Last 30 Days)
+                        </div>
+                        <div class="h5 mb-0 fw-bold text-gray-800">{{ total_sales|floatformat:0 }}
+                        <small class="fs-6">XAF</small>    
+                        </div>
+                    </div>
+                    <div class="col-auto"><i class="fas fa-dollar-sign fa-2x text-primary"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col me-2">
+                        <div class="text-xs fw-bold text-success text-uppercase mb-1">
+                            Net Profit (Last 30 Days)
+                        </div>
+                        <div class="h5 mb-0 fw-bold text-gray-800">{{ net_profit|floatformat:0 }}
+                        <small class="fs-6">XAF</small>
+                        </div>
+                    </div>
+                    <div class="col-auto"><i class="fas fa-hand-holding-dollar fa-2x text-success"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-danger shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col me-2">
+                        <div class="text-xs fw-bold text-danger text-uppercase mb-1">
+                            Total Expenses (Last 30 Days)
+                        </div>
+                        <div class="h5 mb-0 fw-bold text-gray-800">{{ total_expenses|floatformat:0 }}
+                        <small class="fs-6">XAF</small>    
+                        </div>
+                    </div>
+                    <div class="col-auto"><i class="fas fa-receipt fa-2x text-danger"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col me-2">
+                        <div class="text-xs fw-bold text-warning text-uppercase mb-1">
+                            Pending Credits
+                        </div>
+                        <div class="h5 mb-0 fw-bold text-gray-800">{{ total_credit|floatformat:0 }}
+                        <small class="fs-6">XAF</small></div>
+                    </div>
+                    <div class="col-auto"><i class="fas fa-file-invoice-dollar fa-2x text-warning"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+    <div class="col-lg-7 mb-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3"><h6 class="m-0 fw-bold text-primary">Daily Sales Trend</h6></div>
+            <div class="card-body"><canvas id="salesChart"></canvas></div>
+        </div>
+    </div>
+    
+    <div class="col-lg-5 mb-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3"><h6 class="m-0 fw-bold text-primary">Top 5 Product Performance (Units Sold)</h6></div>
+            <div class="card-body"><canvas id="productChart"></canvas></div>
+        </div>
+    </div>
+    
+
+    <div class="col-lg-5 mb-3">
+        <form action="{% url 'delete_all_sales' %}" method="POST" onsubmit="return confirm('ARE YOU SURE? This will permanently delete ALL your sales records and cannot be undone.');">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline-danger">
+            <i class="fas fa-trash-alt me-2"></i>Clear All Sales
+        </button>
+        </form>
+    </div>
+    
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Parse JSON data from Django
+    const salesLabels = JSON.parse('{{ sales_labels_json|safe }}');
+    const salesData = JSON.parse('{{ sales_data_json|safe }}');
+    const productLabels = JSON.parse('{{ product_labels_json|safe }}');
+    const productData = JSON.parse('{{ product_data_json|safe }}');
+
+    // --- Sales Trend Line Chart ---
+    new Chart(document.getElementById('salesChart'), {
+        type: 'line',
+        data: {
+            labels: salesLabels,
+            datasets: [{
+                label: 'Revenue (XAF)',
+                data: salesData,
+                borderColor: '#4e73df',
+                backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: { maintainAspectRatio: false }
+    });
+
+    // --- Top Products Bar Chart ---
+    new Chart(document.getElementById('productChart'), {
+        type: 'bar',
+        data: {
+            labels: productLabels,
+            datasets: [{
+                label: 'Units Sold',
+                data: productData,
+                backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'],
+            }]
+        },
+        options: { 
+            indexAxis: 'y', // Makes it a horizontal bar chart
+            maintainAspectRatio: false 
+        }
+    });
+</script>
+{% endblock %}

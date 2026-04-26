@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Dashboard{% endblock %}</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+
+    {% block extra_css %}{% endblock %}
+    
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --sidebar-bg: #212529;
+            --sidebar-hover: #343a40;
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            overflow-x: hidden;
+            background-color: #f8f9fa;
+        }
+
+        /* Sidebar Styling */
+        #sidebar-wrapper {
+            min-height: 100vh;
+            width: var(--sidebar-width);
+            margin-left: 0;
+            background-color: var(--sidebar-bg);
+            transition: margin var(--transition-speed) ease-in-out;
+            position: fixed;
+            z-index: 1100;
+        }
+
+        #sidebar-wrapper .sidebar-header {
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        #sidebarCloseBtn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.2rem;
+            display: none; /* Hidden on desktop */
+        }
+
+        /* Sidebar Links */
+        .list-group-item {
+            background: transparent !important;
+            color: rgba(255,255,255,0.7) !important;
+            border: none !important;
+            padding: 1rem 1.5rem;
+            transition: all 0.2s;
+        }
+
+        .list-group-item:hover {
+            color: #fff !important;
+            background-color: var(--sidebar-hover) !important;
+        }
+
+        .list-group-item.active {
+            color: #fff !important;
+            background-color: #0d6efd !important;
+            font-weight: 500;
+        }
+
+        /* Page Content Logic */
+        #page-content-wrapper {
+            min-width: 100vw;
+            padding-left: var(--sidebar-width);
+            transition: padding var(--transition-speed) ease-in-out;
+        }
+
+        .navbar {
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        /* Mobile Overlay */
+        #sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.5);
+            z-index: 1050;
+            display: none;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 768px) {
+            #sidebar-wrapper {
+                margin-left: calc(-1 * var(--sidebar-width));
+            }
+            
+            #page-content-wrapper {
+                padding-left: 0;
+            }
+
+            #sidebarCloseBtn {
+                display: block;
+            }
+
+            /* Toggle State for Mobile */
+            #wrapper.toggled #sidebar-wrapper {
+                margin-left: 0;
+            }
+
+            #wrapper.toggled #sidebar-overlay {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="d-flex" id="wrapper">
+    <div id="sidebar-overlay"></div>
+
+    <div id="sidebar-wrapper" class="border-end border-dark">
+        <div class="sidebar-header">
+            <div class="text-white fs-5 fw-bold">
+                <i class="fas fa-chart-line me-2 text-warning"></i> Admin Panel
+            </div>
+            <button id="sidebarCloseBtn" aria-label="Close Sidebar">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="list-group list-group-flush mt-3">
+            <a href="{% url 'dashboard_home' %}" class="list-group-item list-group-item-action {% if request.path == '/' %}active{% endif %}">
+                <i class="fas fa-home me-3"></i> Dashboard
+            </a>
+            <a href="{% url 'manage_products' %}" class="list-group-item list-group-item-action">
+                <i class="fas fa-box me-3"></i> Products
+            </a>
+            <a href="{% url 'manage_sellers' %}" class="list-group-item list-group-item-action">
+                <i class="fas fa-users-cog me-3"></i> Users
+            </a>
+            <a href="{% url 'manage_expenses' %}" class="list-group-item list-group-item-action">
+                <i class="fas fa-money-bill-wave me-3"></i> Expenses
+            </a>
+            <a href="{% url 'sales_report' %}" class="list-group-item list-group-item-action">
+                <i class="fas fa-chart-bar me-3"></i> Sales Reports
+            </a>
+            <a href="{% url 'admin_order' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-box-seam me-3"></i> Orders
+            </a>
+            <a href="{% url 'manage_credits' %}" class="list-group-item list-group-item-action">
+                <i class="fas fa-file-invoice-dollar me-3"></i> Credits
+            </a>
+            <hr class="mx-3 my-2 text-secondary">
+            <a href="{% url 'logout' %}" class="list-group-item list-group-item-action text-danger">
+                <i class="fas fa-sign-out-alt me-3"></i> Logout
+            </a>
+        </div>
+    </div>
+
+    <div id="page-content-wrapper">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top">
+            <div class="container-fluid">
+                <button class="btn btn-outline-secondary border-0" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <h6 class="ms-3 mb-0 d-none d-sm-block fw-semibold">Welcome, Admin User!</h6>
+
+                <div class="ms-auto">
+                    <ul class="navbar-nav">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-circle fs-5 me-2"></i>
+                                <span class="d-none d-md-inline">My Profile</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                                <li><a class="dropdown-item py-2" href="{% url 'home' %}">Home</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item py-2 text-danger" href="{% url 'logout' %}">Logout</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <main class="container-fluid p-4">
+            {% block content %}
+            {% endblock %}
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const wrapper = document.getElementById('wrapper');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
+        const overlay = document.getElementById('sidebar-overlay');
+
+        function toggleSidebar() {
+            wrapper.classList.toggle('toggled');
+        }
+
+        // Toggle button in navbar
+        sidebarToggle.addEventListener('click', toggleSidebar);
+
+        // Close buttons (X and Overlay)
+        if (sidebarCloseBtn) sidebarCloseBtn.addEventListener('click', toggleSidebar);
+        if (overlay) overlay.addEventListener('click', toggleSidebar);
+
+        // Handle window resize: Auto-close sidebar if switching from mobile to desktop
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                wrapper.classList.remove('toggled');
+            }
+        });
+    });
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

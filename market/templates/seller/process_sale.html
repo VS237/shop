@@ -1,0 +1,48 @@
+<div class="row row-cols-2 row-cols-md-4 g-3">
+    {% for p in products %}
+    <div class="col">
+        <div class="card h-100 shadow-sm border-0 text-center p-3">
+            <img src="{{ p.image.url }}" class="mx-auto mb-2" style="width: 60px; height: 60px; object-fit: cover;">
+            <h6>{{ p.name }}</h6>
+            <p class="text-primary fw-bold mb-2">{{ p.selling_price|intcomma }} XAF</p>
+            <button class="btn btn-sm btn-dark w-100" data-bs-toggle="modal" data-bs-target="#saleModal{{ p.id }}">
+                Select
+            </button>
+        </div>
+    </div>
+
+    <div class="modal fade" id="saleModal{{ p.id }}" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <form action="{% url 'process_sale' %}" method="POST" class="modal-content">
+                {% csrf_token %}
+                <input type="hidden" name="product_id" value="{{ p.id }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Sale: {{ p.name }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-start">
+                    <p>Price: <strong>{{ p.selling_price|intcomma }} XAF</strong></p>
+                    <div class="mb-3">
+                        <label class="form-label">Payment Method</label>
+                        <select name="payment_method" class="form-select">
+                            <option value="cash">Cash</option>
+                            <option value="mobile_money">Mobile Money</option>
+                        </select>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="is_completed" checked id="comp{{ p.id }}">
+                        <label class="form-check-label" for="comp{{ p.id }}">Payment Received (Complete Sale)</label>
+                    </div>
+                    <div class="alert alert-info mt-3 small">
+                        Unchecking "Payment Received" will record this as a credit.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Confirm Transaction</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>

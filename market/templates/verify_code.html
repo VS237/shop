@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Identity | FUTURE</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --brand-orange: #ff6b00;
+            --brand-black: #000000;
+            --bg-soft: #fafafa;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: rgb(42, 41, 41);
+            color: var(--brand-black);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .verify-container {
+            width: 100%;
+            max-width: 450px;
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+            text-align: center;
+        }
+
+        .icon-box {
+            width: 70px;
+            height: 70px;
+            background: rgba(255, 107, 0, 0.1);
+            color: var(--brand-orange);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 25px auto;
+            font-size: 1.8rem;
+        }
+
+        .logo-area h2 {
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin: 0;
+            font-size: 1.75rem;
+        }
+
+        .logo-area span { color: var(--brand-orange); }
+
+        .form-control {
+            border: 2px solid #eee;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: 12px;
+            text-align: center;
+            background-color: #fdfdfd;
+            transition: all 0.2s ease;
+            margin-top: 20px;
+        }
+
+        .form-control:focus {
+            border-color: var(--brand-orange);
+            background-color: #fff;
+            box-shadow: 0 0 0 4px rgba(255, 107, 0, 0.1);
+            outline: none;
+        }
+
+        .btn-submit {
+            background-color: var(--brand-black);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 14px;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 30px;
+            transition: all 0.2s;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--brand-orange);
+            transform: translateY(-2px);
+        }
+
+        /* Notification Styling */
+        .notification-wrapper { z-index: 1080; width: 90%; max-width: 400px; }
+        .custom-alert {
+            background-color: #121212 !important;
+            color: white !important;
+            border: none;
+            border-left: 5px solid var(--brand-orange) !important;
+            border-radius: 12px;
+        }
+
+        .resend-link {
+            margin-top: 25px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .resend-link a {
+            color: var(--brand-orange);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #resend-btn {
+            color: var(--brand-orange);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        #resend-btn:hover {
+            text-decoration: underline;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+
+<div class="notification-wrapper position-fixed top-0 start-50 translate-middle-x mt-3">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert custom-alert alert-dismissible fade show shadow-lg" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i> {{ message }}
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+
+<div class="verify-container">
+    <div class="icon-box">
+        <i class="fas fa-shield-halved"></i>
+    </div>
+    
+    <div class="logo-area mb-4">
+        <h2>MOM'<span>SHOP</span></h2>
+        <p class="text-muted mt-2">A 6-digit code was sent to <br><strong>{{ email }}</strong></p>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+        
+        <div class="mb-3">
+            <input type="text" name="otp_code" maxlength="6" 
+                   class="form-control" placeholder="000000" 
+                   required autofocus autocomplete="one-time-code">
+        </div>
+
+        <button type="submit" class="btn-submit">
+            Verify & Secure Account
+        </button>
+
+        <div class="resend-link">
+            <p class="small text-muted mb-1">Didn't receive the code?</p>
+            <div id="timer-container">
+                <span class="text-muted small">Resend available in <strong id="timer">60</strong>s</span>
+            </div>
+            <a href="{% url 'resend_otp' %}" id="resend-btn" class="d-none">Resend New Code</a>
+        </div>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Bulletproof close button fix
+    document.addEventListener('click', function (event) {
+        if (event.target.classList.contains('btn-close') || event.target.closest('.btn-close')) {
+            const alert = event.target.closest('.alert');
+            if (alert) {
+                alert.style.opacity = "0";
+                setTimeout(() => alert.remove(), 300);
+            }
+        }
+    });
+
+    // Auto-focus logic: Ensure only numbers are typed
+    const otpInput = document.querySelector('input[name="otp_code"]');
+    otpInput.addEventListener('input', function(e) {
+        this.value = this.value.replace(/[^0-9]/g, '');
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        let timeLeft = 60; // 60 seconds cooldown
+        const timerDisplay = document.getElementById('timer');
+        const timerContainer = document.getElementById('timer-container');
+        const resendBtn = document.getElementById('resend-btn');
+
+        const countdown = setInterval(() => {
+            timeLeft--;
+            timerDisplay.textContent = timeLeft;
+
+            if (timeLeft <= 0) {
+                clearInterval(countdown);
+                // Hide the timer and show the "Modern Orange" link
+                timerContainer.classList.add('d-none');
+                resendBtn.classList.remove('d-none');
+                resendBtn.style.animation = "fadeIn 0.5s ease";
+            }
+        }, 1000);
+    });
+</script>
+
+</body>
+</html>

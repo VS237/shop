@@ -1,0 +1,236 @@
+{% extends "admin/dashboard_base.html" %}
+{% load humanize %}
+{% load static %}
+
+{% block title %}Sales Report for {{ seller.first_name }} {{ seller.last_name }}{% endblock %}
+
+{% block content %}
+    <div class="row pt-4">
+        <div class="col-12">
+            <h1 class="h3 mb-4 text-gray-800">
+                <i class="fas fa-chart-line me-2"></i> Sales Report for: <span class="text-success">{{ user.first_name }} {{ user.last_name }}</span> 
+            </h1>
+
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">Filter Report</h6>
+                </div>
+                <div class="card-body">
+                    <form method="GET" class="row g-3 align-items-end">
+                        <div class="col-md-3">
+                            <label for="daysFilter" class="form-label">Show Data For (Days)</label>
+                            <select name="days" id="daysFilter" class="form-select">
+                                <option value="7" {% if days == 7 %}selected{% endif %}>Last 7 Days</option>
+                                <option value="30" {% if days == 30 %}selected{% endif %}>Last 30 Days</option>
+                                <option value="90" {% if days == 90 %}selected{% endif %}>Last 90 Days</option>
+                                <option value="365" {% if days == 365 %}selected{% endif %}>Last Year</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-0 text-muted">
+                                Showing sales data from 
+                                <strong>{{ start_date|date:"M d, Y" }}</strong> to 
+                                <strong>{{ end_date|date:"M d, Y" }}</strong>.
+                            </p>
+                        </div>
+                        <div class="col-md-3 d-grid">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-sync-alt me-1"></i> Update Report
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xl-4 col-md-6 mb-4">
+                    <div class="card border-start-success shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col me-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                        Total Revenue
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                        {{ total_sales.total_revenue|default:0|intcomma }} XAF
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-money-bill-wave fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-4 col-md-6 mb-4">
+                    <div class="card border-start-primary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col me-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        Total Transactions
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                        {{ total_sales.total_transactions|default:0|intcomma }}
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-receipt fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-4 col-md-6 mb-4">
+                    <div class="card border-start-info shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col me-2">
+                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                        Average Sale Value
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                        {{ total_sales.average_sale|default:0|floatformat:0|intcomma }} XAF
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">Daily Revenue Trend</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="dailySalesChart" style="max-height: 400px;"></canvas>
+                    {% if not daily_sales %}
+                        <div class="text-center p-5 text-muted">No sales data recorded for this period.</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">Detailed Transactions ({{ sales|length }} records)</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped" id="dataTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Date</th>
+                                    <th>Amount (XAF)</th>
+                                    <th>Customer</th>
+                                    <th>Payment Method</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sale in sales %}
+                                <tr>
+                                    <td>{{ sale.id }}</td>
+                                    <td>{{ sale.sale_date|date:"Y-m-d H:i" }}</td>
+                                    <td>{{ sale.sale_amount|intcomma }}</td>
+                                    <td>
+                                        {% if sale.customer %}
+                                            {{ sale.customer.name }}
+                                        {% else %}
+                                            Guest
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ sale.payment_method }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">No sales transactions found for this period.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+
+    <script>
+        // Data passed from Django view
+        const rawDailySalesData = JSON.parse('{{ daily_sales|safe }}');
+
+        if (rawDailySalesData.length > 0) {
+            const labels = rawDailySalesData.map(d => new Date(d.day).toLocaleDateString());
+            const data = rawDailySalesData.map(d => d.daily_revenue);
+
+            const ctx = document.getElementById('dailySalesChart').getContext('2d');
+            
+            // Create the line chart
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Daily Revenue (XAF)',
+                        data: data,
+                        backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                        borderColor: 'rgba(78, 115, 223, 1)',
+                        borderWidth: 2,
+                        pointRadius: 3,
+                        pointBackgroundColor: 'rgba(78, 115, 223, 1)',
+                        pointBorderColor: '#ffffff',
+                        pointHoverRadius: 5,
+                        pointHoverBackgroundColor: 'rgba(78, 115, 223, 1)',
+                        pointHitRadius: 10,
+                        tension: 0.3 // Smooth line
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    scales: {
+                        x: {
+                            grid: { display: false }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                // Formatting Y-axis to display numbers nicely
+                                callback: function(value, index, values) {
+                                    return 'XAF ' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += 'XAF ' + context.parsed.y.toLocaleString();
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+{% endblock %}

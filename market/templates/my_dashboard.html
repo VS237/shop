@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block content %}
+<div class="breadcrumb-section breadcrumb-bg">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 offset-lg-2 text-center">
+                <div class="breadcrumb-text">
+                    <p>Welcome</p>
+                    <h1>{{ customer.first_name }}</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="fw-bold">Hello, {{ customer.first_name }}</h2>
+            <p class="text-muted">Welcome to your MOMSHOP account overview.</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 bg-warning text-dark p-3">
+                <div class="card-body">
+                    <small class="text-uppercase opacity-75">Total Balance Due</small>
+                    <h1 class="display-5 fw-bold my-2">{{ total_debt|intcomma }} <span class="fs-2">XAF</span></h1>
+                    <div class="mt-4">
+                        <span class="badge {% if total_debt > 0 %}bg-danger{% else %}bg-success{% endif %}">
+                            {% if total_debt > 0 %}Payment Pending{% else %}No Outstanding Debt{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card border-0 shadow-sm rounded-4 mt-4 p-3">
+                <h6 class="fw-bold"><i class="fas fa-info-circle me-2 text-primary"></i>Your Credit Limit</h6>
+                <p class="mb-0 text-muted">You are authorized for up to <strong>{{ customer.credit_limit|intcomma }} XAF</strong> in purchases.</p>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="fw-bold mb-0">Transaction History</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr class="small text-muted text-uppercase">
+                                <th class="ps-4">Ticket</th>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th class="text-end pe-4">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for credit in credits %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="fw-medium">#{{ credit.credit_number|truncatechars:8 }}</div>
+                                    <div class="small text-muted">Items: {{ credit.products.count }}</div>
+                                </td>
+                                <td>{{ credit.credit_date|date:"M d, Y" }}</td>
+                                <td class="fw-bold">{{ credit.amount|intcomma }} XAF</td>
+                                <td class="text-end pe-4">
+                                    {% if credit.status == 'paid' %}
+                                        <span class="text-success small"><i class="fas fa-check-circle me-1"></i>Settled</span>
+                                    {% else %}
+                                        <span class="text-danger small fw-bold">Due: {{ credit.expected_return_date|date:"M d" }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5">No transactions found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

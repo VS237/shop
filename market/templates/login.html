@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | MOM'SHOP</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --brand-orange: #ff6b00;
+            --brand-black: #000000;
+            --bg-soft: #fafafa;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: rgb(42, 41, 41);
+            color: var(--brand-black);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 450px;
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+        }
+
+        .logo-area {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .logo-area h2 {
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin: 0;
+            font-size: 2rem;
+        }
+
+        .logo-area span {
+            color: var(--brand-orange);
+        }
+
+        .form-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 6px;
+            margin-left: 4px;
+        }
+
+        .form-control {
+            border: 1.5px solid #eee;
+            padding: 14px 16px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            background-color: #fdfdfd;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--brand-orange);
+            background-color: #fff;
+            box-shadow: 0 0 0 4px rgba(255, 107, 0, 0.1);
+            outline: none;
+        }
+
+        .btn-submit {
+            background-color: var(--brand-black);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 14px;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 20px;
+            transition: all 0.2s;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--brand-orange);
+            transform: translateY(-2px);
+        }
+
+        /* Pop-out Notification Styling */
+        .notification-wrapper {
+            z-index: 1080;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .custom-alert {
+            background-color: #121212 !important;
+            color: white !important;
+            border: none;
+            border-left: 5px solid var(--brand-orange) !important;
+            border-radius: 12px;
+        }
+
+        .signup-link {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .signup-link a {
+            color: var(--brand-orange);
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+<div class="notification-wrapper position-fixed top-0 start-50 translate-middle-x mt-3">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert custom-alert alert-dismissible fade show shadow-lg" role="alert">
+                <i class="fas fa-info-circle me-2"></i> {{ message }}
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+
+<div class="login-container">
+    <div class="logo-area">
+        <h2>MOM'<span>SHOP</span></h2>
+        <p class="text-muted small">Access your retail dashboard</p>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label class="form-label">Username or Email</label>
+            <input type="text" name="user" class="form-control" placeholder="Enter your credentials" required>
+        </div>
+
+        <div class="mb-2">
+            <div class="d-flex justify-content-between">
+                <label class="form-label">Password</label>
+                <a href="#" class="small text-decoration-none" style="color: var(--brand-orange);">Forgot?</a>
+            </div>
+            <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+        </div>
+
+        <button type="submit" class="btn-submit">
+            Sign In <i class="fas fa-arrow-right ms-2"></i>
+        </button>
+
+        <div class="signup-link">
+            Not a member? <a href="{% url 'register' %}">Create account</a>
+        </div>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Bulletproof fix for the close button
+    document.addEventListener('click', function (event) {
+        if (event.target.classList.contains('btn-close') || event.target.closest('.btn-close')) {
+            const alert = event.target.closest('.alert');
+            if (alert) {
+                alert.style.opacity = "0";
+                setTimeout(() => alert.remove(), 300);
+            }
+        }
+    });
+
+    // Auto-dismiss notifications after 5s
+    setTimeout(() => {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            alert.style.opacity = "0";
+            setTimeout(() => alert.remove(), 300);
+        });
+    }, 5000);
+</script>
+
+</body>
+</html>
