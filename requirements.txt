@@ -17,6 +17,7 @@ Django==6.0.4
 django-cloudinary-storage==0.3.0
 django-crispy-forms==2.6
 fsspec==2026.3.0
+gunicorn==25.3.0
 h11==0.16.0
 h2==4.3.0
 hpack==4.1.0
