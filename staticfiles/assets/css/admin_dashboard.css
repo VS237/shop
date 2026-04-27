@@ -1,0 +1,123 @@
+:root {
+            --sidebar-width: 250px;
+            --primary-color: #0d6efd; 
+            --secondary-color: #17a2b8; /* Info/Cyan for accents */
+        }
+        
+        /* 1. Base Layout Setup */
+        .d-flex {
+            min-height: 100vh; /* Ensure wrapper takes full screen height */
+        }
+
+        /* 2. Sidebar Styling (Fixed on the left) */
+        #sidebar-wrapper {
+            width: var(--sidebar-width);
+            min-height: 100vh;
+            /* Hide by default for mobile view */
+            margin-left: calc(-1 * var(--sidebar-width)); 
+            transition: margin 0.3s ease-in-out;
+            background-color: #212529; /* Deeper dark background */
+            position: fixed;
+            z-index: 1030;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.5); /* Subtle shadow for depth */
+        }
+        
+        /* 3. Page Content Area - Base */
+        #page-content-wrapper {
+            /* Base padding-left removed for clearer mobile behavior */
+            width: 100%;
+            transition: margin 0.3s ease-in-out, padding-left 0.3s ease-in-out;
+            padding-top: 56px; /* Space for fixed navbar */
+        }
+
+        /* 4. Mobile Toggle State (Sidebar visible) */
+        .toggled #sidebar-wrapper {
+            margin-left: 0;
+        }
+        /* We REMOVE the margin-left from page-content-wrapper on mobile. 
+        The sidebar will slide over the content, ensuring the navbar remains accessible. */
+
+
+        /* 5. Desktop/Tablet View (min-width: 768px) */
+        @media (min-width: 768px) {
+            /* Sidebar is visible and locked to the side */
+            #sidebar-wrapper {
+                margin-left: 0;
+            }
+            /* Content is shifted permanently to the right */
+            #page-content-wrapper {
+                min-width: 0;
+                width: 100%;
+                /* Use margin to account for the fixed sidebar width */
+                margin-left: var(--sidebar-width); 
+            }
+            
+            /* Desktop Toggle State (Hiding the sidebar and returning content to full width) */
+            .toggled #sidebar-wrapper {
+                margin-left: calc(-1 * var(--sidebar-width));
+            }
+            .toggled #page-content-wrapper {
+                margin-left: 0; /* Full width */
+            }
+        }
+        
+        /* 6. Sidebar Menu Styles */
+        .list-group-item {
+            color: rgba(255, 255, 255, 0.75);
+            background-color: transparent;
+            border: none;
+            border-radius: 0;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .list-group-item:hover {
+            color: #fff;
+            background-color: #3e444a; /* Slightly lighter dark */
+        }
+        .list-group-item.active {
+            color: #fff;
+            background-color: var(--primary-color);
+            border-left: 5px solid var(--secondary-color); /* Highlight active item */
+        }
+
+        /* NEW: Style for the Close Button container */
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1rem 1rem 1.5rem; /* Adjusted padding */
+            border-bottom: 1px solid #495057; /* Using a darker border for contrast */
+        }
+
+        /* NEW: Style for the Close Button itself (only shown on mobile) */
+        #sidebarCloseBtn {
+            /* Hide the button by default */
+            display: none; 
+            /* Style the button */
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        #sidebarCloseBtn:hover {
+            color: white;
+        }
+
+        /* Show the close button only on small screens */
+        @media (max-width: 767.98px) {
+            #sidebarCloseBtn {
+                display: block; 
+            }
+        }
+        /* Ensure the hamburger button is hidden on desktop if you only want the X on mobile */
+        @media (min-width: 768px) {
+            #sidebarCloseBtn {
+                display: none; 
+            }
+        }
+
+        /* 7. Navbar Fix (ensuring sticky navbar doesn't interfere with main content) */
+        .navbar {
+            z-index: 1000;
+        }
