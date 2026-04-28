@@ -233,10 +233,16 @@ def forgot_password(request):
         # Supabase sends the recovery email
         # The 'redirect_to' should be your password update page
         supabase.auth.reset_password_for_email(email, {
-            "redirect_to": "https://momshop-c79n.onrender.com/update-password/"
+            "redirect_to": "http://127.0.0.1:8000/update-password/"
         })
         return render(request, 'forgot_password.html', {"msg": "Check your email!"})
     return render(request, 'forgot_password.html')
+
+from supabase_auth.errors import AuthApiError
+
+from django.contrib.auth.models import User
+from django.shortcuts import render
+from supabase.lib.client_options import ClientOptions
 
 def update_password(request):
     if request.method == "POST":
@@ -246,19 +252,42 @@ def update_password(request):
 
         if access_token and refresh_token:
             try:
-                # Supply both arguments as required by the latest SDK
-                supabase.auth.set_session(access_token, refresh_token)
+                # 1. Establish the session
+                session_resp = supabase.auth.set_session(access_token, refresh_token)
                 
-                # Now that the session is set, this will work
-                supabase.auth.update_user({"password": new_password})
-                
-                return render(request, 'password_reset_complete.html')
-            except Exception as e:
-                return render(request, 'update_password.html', {"msg": f"Update failed: {str(e)}"})
-        else:
-            return render(request, 'update_password.html', {"msg": "Session data missing. Try the email link again."})
+                # 2. Verify the session is actually active
+                user_resp = supabase.auth.get_user()
+                if user_resp.user:
+                    email = user_resp.user.email
+                    
+                    # 3. Update Supabase Cloud Password
+                    supabase.auth.update_user({"password": new_password})
+                    
+                    # 4. CRITICAL: Update Django Local Password
+                    # This ensures you can actually log in with the new password
+                    try:
+                        local_user = User.objects.get(email=email)
+                        local_user.set_password(new_password)
+                        local_user.save()
+                    except User.DoesNotExist:
+                        # If user doesn't exist locally, you might want to create them 
+                        # or just log the error
+                        print(f"User {email} updated in Supabase but not found in Django.")
+
+                    return render(request, 'password_reset_complete.html')
+                else:
+                    return render(request, 'update_password.html', {"msg": "Invalid Session."})
             
+            except Exception as e:
+                print(f"Password Update Error: {e}")
+                return render(request, 'update_password.html', {"msg": "Something went wrong. Please try again."})
+        
+        return render(request, 'update_password.html', {"msg": "Session data missing."})
+
     return render(request, 'update_password.html')
+
+def password_reset_complete(request):
+    return render(request, 'password_reset_complete.html')
 
 def home(request):
     query = request.GET.get('q', '')

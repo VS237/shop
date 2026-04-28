@@ -27,6 +27,7 @@ urlpatterns = [
   path('resend-otp/', views.resend_otp, name='resend_otp'),
   path('forgot-password/', views.forgot_password, name='forgot_password'),
   path('update-password/', views.update_password, name='update_password'),
+  path('password-reset/done/', views.password_reset_complete, name='password_reset_complete'),
   path('login/', views.user_login, name='login'),
   path('logout/', views.logout_view, name='logout'),
 
