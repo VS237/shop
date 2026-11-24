@@ -2,243 +2,389 @@
 {% load humanize %}
 
 {% block content %}
-<div hx-get="{% url 'check_for_new_orders' %}" hx-trigger="every 20s" hx-swap="innerHTML">
+<!-- Background HTMX order poller -->
+<div id="order-poller" hx-get="{% url 'check_for_new_orders' %}" hx-trigger="every 20s" hx-swap="innerHTML">
     <div id="notification-area"></div>
 </div>
 
-<div class="container-fluid py-4 bg-light min-vh-100">
-    <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm bg-primary text-white h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between px-md-1">
+<div class="pos-shell py-4">
+    <div class="container-fluid px-3 px-lg-4">
+        <!-- Top Header Bar -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-3 py-1 fw-semibold">
+                        Seller Terminal
+                    </span>
+                    <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-2 py-1 small">
+                        <span class="live-dot me-1"></span>Live Sync (20s)
+                    </span>
+                </div>
+                <h3 class="fw-bold mb-0 text-dark">Welcome back, {{ user.first_name|default:user.username }}</h3>
+            </div>
+
+            <!-- Navigation Pills -->
+            <ul class="nav nav-pills pos-pills p-1 rounded-3 bg-white border shadow-2xs" id="pills-tab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active fw-semibold px-3 px-md-4 py-2 rounded-2" data-bs-toggle="pill" data-bs-target="#pills-sale" type="button" role="tab">
+                        <i class="fas fa-cash-register me-2"></i>POS System
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link fw-semibold px-3 px-md-4 py-2 rounded-2" data-bs-toggle="pill" data-bs-target="#pills-inventory" type="button" role="tab">
+                        <i class="fas fa-boxes-stacked me-2"></i>Inventory
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link fw-semibold px-3 px-md-4 py-2 rounded-2" data-bs-toggle="pill" data-bs-target="#pills-report" type="button" role="tab">
+                        <i class="fas fa-chart-line me-2"></i>Daily Report
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <!-- KPI Summary Row -->
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-xl-3">
+                <div class="card kpi-card border-0 shadow-xs h-100">
+                    <div class="card-body d-flex justify-content-between align-items-start p-3 p-md-4">
                         <div>
-                            <h6 class="mb-1 opacity-75">Welcome back,</h6>
-                            <h4 class="fw-bold mb-0">{{user.first_name}}</h4>
+                            <div class="kpi-label text-uppercase fw-semibold text-muted mb-1">Daily Revenue</div>
+                            <div class="kpi-value fw-bold text-dark tabular-nums">
+                                {{ today_total|intcomma|default:"0" }} <span class="fs-6 fw-semibold text-muted">XAF</span>
+                            </div>
+                            <div class="small text-success fw-medium mt-2">
+                                <i class="fas fa-arrow-trend-up me-1"></i>{{ today_count }} completed sales
+                            </div>
                         </div>
-                        <i class="fas fa-user-circle fa-2x opacity-50"></i>
+                        <div class="kpi-icon bg-success-subtle text-success rounded-3">
+                            <i class="fas fa-coins fa-lg"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-3">
+                <div class="card kpi-card border-0 shadow-xs h-100">
+                    <div class="card-body d-flex justify-content-between align-items-start p-3 p-md-4">
+                        <div>
+                            <div class="kpi-label text-uppercase fw-semibold text-muted mb-1">Pending Credits</div>
+                            <div class="kpi-value fw-bold text-warning-emphasis tabular-nums">
+                                {{ total_credit_today|floatformat:0|default:"0" }} <span class="fs-6 fw-semibold text-muted">XAF</span>
+                            </div>
+                            <div class="small text-muted mt-2">
+                                <i class="fas fa-clock me-1"></i>Unpaid customer balances
+                            </div>
+                        </div>
+                        <div class="kpi-icon bg-warning-subtle text-warning-emphasis rounded-3">
+                            <i class="fas fa-file-invoice fa-lg"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-3">
+                <div class="card kpi-card border-0 shadow-xs h-100">
+                    <div class="card-body d-flex justify-content-between align-items-start p-3 p-md-4">
+                        <div>
+                            <div class="kpi-label text-uppercase fw-semibold text-muted mb-1">Low Stock Alerts</div>
+                            <div class="kpi-value fw-bold text-danger tabular-nums">
+                                {{ low_stock.count }}
+                            </div>
+                            <div class="small text-muted mt-2">
+                                <i class="fas fa-triangle-exclamation text-danger me-1"></i>Items at or below minimum
+                            </div>
+                        </div>
+                        <div class="kpi-icon bg-danger-subtle text-danger rounded-3">
+                            <i class="fas fa-box-open fa-lg"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-xl-3">
+                <div class="card kpi-card border-0 shadow-xs h-100">
+                    <div class="card-body d-flex justify-content-between align-items-start p-3 p-md-4">
+                        <div>
+                            <div class="kpi-label text-uppercase fw-semibold text-muted mb-1">Catalog Items</div>
+                            <div class="kpi-value fw-bold text-primary tabular-nums">
+                                {{ products|length }}
+                            </div>
+                            <div class="small text-muted mt-2">
+                                <i class="fas fa-store me-1"></i>Active POS products
+                            </div>
+                        </div>
+                        <div class="kpi-icon bg-primary-subtle text-primary rounded-3">
+                            <i class="fas fa-tags fa-lg"></i>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm bg-white h-100">
-                <div class="card-body border-start border-success border-4 rounded">
-                    <h6 class="text-muted small text-uppercase fw-bold">Daily Revenue</h6>
-                    <h4 class="fw-bold mb-0">{{ today_total|intcomma|default:"0" }} <small class="fs-6">XAF</small></h4>
-                    <span class="text-success small"><i class="fas fa-shopping-cart"></i> {{ today_count }} sales</span>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm bg-white h-100">
-                <div class="card-body border-start border-warning border-4 rounded">
-                    <h6 class="text-muted small text-uppercase fw-bold">Pending Credits</h6>
-                    <h4 class="fw-bold mb-0 text-warning">{{ total_credit_today|floatformat:0 }} <small class="fs-6">XAF</small></h4>
-                    <span class="text-muted small">Unpaid orders</span>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm bg-white h-100">
-                <div class="card-body border-start border-danger border-4 rounded">
-                    <h6 class="text-muted small text-uppercase fw-bold">Low Stock</h6>
-                    <h4 class="fw-bold mb-0 text-danger">{{ low_stock.count }}</h4>
-                    <span class="text-muted small">Items below limit</span>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <ul class="nav nav-pills mb-4 bg-white p-2 rounded shadow-sm d-inline-flex" id="pills-tab" role="tablist">
-        <li class="nav-item"><button class="nav-link active fw-bold px-4" data-bs-toggle="pill" data-bs-target="#pills-sale">🚀 POS SYSTEM</button></li>
-        <li class="nav-item"><button class="nav-link fw-bold px-4" data-bs-toggle="pill" data-bs-target="#pills-inventory">📦 INVENTORY</button></li>
-        <li class="nav-item"><button class="nav-link fw-bold px-4" data-bs-toggle="pill" data-bs-target="#pills-report">📊 DAILY REPORT</button></li>
-    </ul>
-
-    <div class="tab-content">
-        <div class="tab-pane fade show active" id="pills-sale">
-            <div class="row">
-                <div class="col-md-8">
-                    <div class="card border-0 shadow-sm mb-3">
-                        <div class="card-header bg-white py-3">
-                            <div class="input-group input-group-lg">
-                                <span class="input-group-text bg-light border-0"><i class="fas fa-search text-muted"></i></span>
-                                <input type="text" id="posSearch" class="form-control bg-light border-0 shadow-none" 
-                                       placeholder="Search for items by name..." onkeyup="filterPOS()">
-                            </div>
-                        </div>
-                        <div class="card-body overflow-auto" style="height: 550px;" id="pos-grid">
-                            <div class="row row-cols-2 row-cols-lg-4 g-3">
-                                {% for p in products %}
-                                <div class="col product-item" data-name="{{ p.name|lower }}">
-                                    <div class="card h-100 text-center product-card border-0 shadow-sm {% if p.quantity <= 0 %}opacity-50 pe-none{% endif %}" 
-                                         onclick="addToCart('{{ p.id }}', '{{ p.name }}', '{{ p.selling_price }}', '{{ p.quantity }}')">
-                                        <div class="p-3">
-                                            {% if p.image %}
-                                            <img src="{{ p.image.url }}" class="img-fluid rounded" style="width: 60px; height: 60px; object-fit: contain;">
-                                            {% endif %}
-                                        </div>
-                                        <div class="card-body p-2 pt-0">
-                                            <p class="mb-0 small fw-bold text-truncate">{{ p.name }}</p>
-                                            <span class="text-primary fw-bold">{{ p.selling_price|floatformat:0 }} <small>XAF</small></span>
-                                            <div class="text-muted" style="font-size: 0.7rem;">Stock: {{ p.quantity }}</div>
+        <!-- Main Tab Content -->
+        <div class="tab-content">
+            <!-- TAB 1: POS SYSTEM -->
+            <div class="tab-pane fade show active" id="pills-sale" role="tabpanel">
+                <div class="row g-4 align-items-start">
+                    <!-- Product Catalog Grid -->
+                    <div class="col-lg-8">
+                        <div class="card border-0 shadow-xs">
+                            <div class="card-header bg-white border-bottom py-3 px-4">
+                                <div class="row g-2 align-items-center">
+                                    <div class="col">
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light border-end-0 text-muted">
+                                                <i class="fas fa-search"></i>
+                                            </span>
+                                            <input type="text" id="posSearch" class="form-control bg-light border-start-0 shadow-none"
+                                                   placeholder="Search products by name..." onkeyup="filterPOS()">
                                         </div>
                                     </div>
+                                    <div class="col-auto">
+                                        <button type="button" class="btn btn-light border btn-sm px-3 py-2" onclick="clearSearch()" title="Reset filter">
+                                            <i class="fas fa-rotate-left me-1"></i>Reset
+                                        </button>
+                                    </div>
                                 </div>
-                                {% endfor %}
+                            </div>
+
+                            <div class="card-body p-3 p-md-4 pos-grid-scroll" id="pos-grid">
+                                <div class="row row-cols-2 row-cols-sm-3 row-cols-xl-4 g-3">
+                                    {% for p in products %}
+                                    <div class="col product-item" data-name="{{ p.name|lower }}">
+                                        <div class="card product-card h-100 border shadow-2xs {% if p.quantity <= 0 %}out-of-stock{% endif %}"
+                                             {% if p.quantity > 0 %}
+                                             onclick="addToCart('{{ p.id }}', '{{ p.name|escapejs }}', '{{ p.selling_price }}', '{{ p.quantity }}')"
+                                             {% endif %}>
+                                            <div class="product-thumb-wrap bg-light-subtle d-flex align-items-center justify-content-center p-3 position-relative">
+                                                {% if p.quantity <= 0 %}
+                                                    <span class="badge bg-secondary position-absolute top-0 end-0 m-2">Out</span>
+                                                {% elif p.quantity <= p.min_stock_level %}
+                                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle position-absolute top-0 end-0 m-2">Low</span>
+                                                {% endif %}
+
+                                                {% if p.image %}
+                                                    <img src="{{ p.image.url }}" alt="{{ p.name }}" class="product-img">
+                                                {% else %}
+                                                    <i class="fas fa-box fa-2x text-secondary opacity-50"></i>
+                                                {% endif %}
+                                            </div>
+                                            <div class="card-body p-3 d-flex flex-column justify-content-between">
+                                                <div class="fw-semibold text-dark small mb-2 line-clamp-2" title="{{ p.name }}">
+                                                    {{ p.name }}
+                                                </div>
+                                                <div>
+                                                    <div class="fw-bold text-primary tabular-nums">
+                                                        {{ p.selling_price|floatformat:0 }} <small class="fw-semibold text-muted">XAF</small>
+                                                    </div>
+                                                    <div class="text-muted mt-1 tabular-nums" style="font-size: 0.75rem;">
+                                                        Stock: <span class="fw-semibold">{{ p.quantity }}</span> {{ p.unit }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% empty %}
+                                    <div class="col-12 text-center py-5 text-muted">
+                                        <i class="fas fa-box-open fa-2x mb-2 opacity-50"></i>
+                                        <p class="mb-0">No products available in catalog.</p>
+                                    </div>
+                                    {% endfor %}
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="col-md-4">
-                    <div class="card border-0 shadow-sm sticky-top" style="top: 20px;">
-                        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
-                            <h6 class="mb-0 fw-bold"><i class="fas fa-receipt me-2"></i>Current Order</h6>
-                            <button class="btn btn-sm btn-outline-light" onclick="clearCart()">Clear</button>
-                        </div>
-                        <div class="card-body">
-                            <form method="POST" action="{% url 'process_sale' %}" onsubmit="return validateSale()">
-                                {% csrf_token %}
-                                
-                                <div id="cart-items" class="mb-3 overflow-auto" style="height: 250px;">
-                                    <div class="text-center py-5 opacity-25">
-                                        <i class="fas fa-shopping-basket fa-3x"></i>
-                                        <p class="mt-2">Cart is empty</p>
-                                    </div>
+                    <!-- Order / Checkout Panel -->
+                    <div class="col-lg-4">
+                        <div class="card border-0 shadow-sm sticky-order-panel">
+                            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3 px-4">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fas fa-receipt text-success"></i>
+                                    <h6 class="mb-0 fw-bold">Current Order</h6>
+                                    <span class="badge bg-secondary rounded-pill tabular-nums" id="cart-count-badge">0</span>
                                 </div>
+                                <button type="button" class="btn btn-sm btn-outline-light border-opacity-25" onclick="clearCart()">
+                                    <i class="fas fa-trash-can me-1"></i>Clear
+                                </button>
+                            </div>
 
-                                <div id="customer-selection-area" class="mb-3" style="display: none;">
-                                    <label class="small fw-bold mb-1 text-danger">Select Customer for Credit</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-white border-end-0"><i class="fas fa-user-tag text-danger"></i></span>
-                                        <select name="customer_id" id="customer-select" class="form-select shadow-none border-start-0 text-dark">
-                                            <option value="">-- Choose Account --</option>
+                            <div class="card-body p-4">
+                                <form method="POST" action="{% url 'process_sale' %}" onsubmit="return validateSale()">
+                                    {% csrf_token %}
+                                    <div id="hidden-cart-inputs"></div>
+
+                                    <!-- Cart Items -->
+                                    <div id="cart-items" class="cart-items-list mb-3 pe-1">
+                                        <div class="text-center py-5 text-muted">
+                                            <i class="fas fa-shopping-basket fa-2x mb-2 opacity-40"></i>
+                                            <p class="small mb-0">Click a product to add it to the order</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Credit Customer Selector -->
+                                    <div id="customer-selection-area" class="mb-3 p-3 rounded-3 bg-danger-subtle bg-opacity-50 border border-danger-subtle" style="display: none;">
+                                        <label for="customer-select" class="form-label small fw-bold text-danger mb-1">
+                                            <i class="fas fa-user-check me-1"></i>Credit Customer Account
+                                        </label>
+                                        <select name="customer_id" id="customer-select" class="form-select form-select-sm bg-white shadow-none">
+                                            <option value="">-- Choose eligible customer --</option>
                                             {% for customer in customers %}
                                                 {% if customer.is_eligible_for_credit %}
                                                 <option value="{{ customer.id }}">
-                                                    {{ customer.first_name }} {{ customer.last_name }} ({{ customer.phone }})
-                                                    {{ customer.city }}
-                                                    {{ customer.address }}
+                                                    {{ customer.first_name }} {{ customer.last_name }} · {{ customer.phone }}{% if customer.city %} ({{ customer.city }}){% endif %}
                                                 </option>
                                                 {% endif %}
                                             {% endfor %}
                                         </select>
                                     </div>
-                                </div>
 
-                                <div class="bg-light p-3 rounded-3 mb-3 border">
-                                    <div class="d-flex justify-content-between mb-2">
-                                        <span class="text-muted">Subtotal</span>
-                                        <span id="subtotal-val" class="fw-bold">0 XAF</span>
-                                    </div>
-                                    <div class="input-group input-group-sm mb-2">
-                                        <span class="input-group-text border-0 bg-white">Discount %</span>
-                                        <input type="number" name="discount_percent" id="discount-input" class="form-control border-0" value="0" min="0" max="100">
-                                    </div>
-                                    <hr class="my-2">
-                                    <div class="d-flex justify-content-between">
-                                        <h5 class="fw-bold mb-0">Total Due</h5>
-                                        <h5 class="fw-bold text-primary mb-0" id="cart-total">0 XAF</h5>
-                                        <input type="hidden" name="final_total" id="final-total-input">
-                                    </div>
-                                </div>
-
-                                <div id="payment-input-area" class="mb-3">
-                                    <div class="input-group input-group-lg border rounded overflow-hidden">
-                                        <span class="input-group-text border-0 bg-white"><i class="fas fa-money-bill-wave text-success"></i></span>
-                                        <input type="number" id="amount-tendered" class="form-control border-0 shadow-none" placeholder="Amount Given">
-                                    </div>
-                                    <div class="d-flex justify-content-between mt-2 px-1">
-                                        <span class="small text-muted">Change to Return:</span>
-                                        <span class="fw-bold text-success" id="change-due">0 XAF</span>
-                                    </div>
-                                </div>
-
-                                <div class="row g-2 mb-3">
-                                    <div class="col-6">
-                                        <select name="payment_method" id="payment-method" class="form-select border-0 bg-light shadow-none">
-                                            <option value="cash">💵 Cash</option>
-                                            <option value="mobile_money">📱 MoMo</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-6">
-                                        <div class="form-check form-switch pt-2">
-                                            <input class="form-check-input" type="checkbox" name="is_completed" id="is-paid-switch" checked onchange="togglePaidMode()">
-                                            <label class="small fw-bold" id="paid-label">Paid</label>
+                                    <!-- Totals Summary -->
+                                    <div class="bg-light p-3 rounded-3 mb-3 border">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="small text-muted">Subtotal</span>
+                                            <span id="subtotal-val" class="fw-semibold tabular-nums">0 XAF</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+                                            <label for="discount-input" class="small text-muted mb-0">Discount (%)</label>
+                                            <input type="number" name="discount_percent" id="discount-input"
+                                                   class="form-control form-control-sm text-end fw-semibold tabular-nums"
+                                                   style="max-width: 100px;" value="0" min="0" max="100" step="any">
+                                        </div>
+                                        <hr class="my-2">
+                                        <div class="d-flex justify-content-between align-items-baseline">
+                                            <span class="fw-bold text-dark">Total Due</span>
+                                            <span class="fs-5 fw-bold text-primary tabular-nums" id="cart-total">0 XAF</span>
+                                            <input type="hidden" name="final_total" id="final-total-input" value="0">
                                         </div>
                                     </div>
-                                </div>
-                                <button type="submit" class="btn btn-success btn-lg w-100 py-3 fw-bold shadow-sm">
-                                    ✅ PROCESS SALE
-                                </button>
-                            </form>
+
+                                    <!-- Payment & Change Calculation -->
+                                    <div id="payment-input-area" class="mb-3">
+                                        <label for="amount-tendered" class="form-label small fw-semibold text-muted mb-1">Amount Tendered (XAF)</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white text-success">
+                                                <i class="fas fa-money-bill-wave"></i>
+                                            </span>
+                                            <input type="number" id="amount-tendered" class="form-control shadow-none tabular-nums"
+                                                   placeholder="0" min="0" step="any">
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center mt-2 px-1">
+                                            <span class="small text-muted">Change to Return</span>
+                                            <span class="fw-bold text-success tabular-nums" id="change-due">0 XAF</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Payment Method & Paid/Credit Switch -->
+                                    <div class="row g-2 align-items-center mb-4">
+                                        <div class="col-7">
+                                            <select name="payment_method" id="payment-method" class="form-select bg-light shadow-none">
+                                                <option value="cash">Cash</option>
+                                                <option value="mobile_money">Mobile Money (MoMo)</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-5">
+                                            <div class="form-check form-switch bg-light border rounded-3 px-3 py-2 d-flex align-items-center justify-content-between m-0">
+                                                <label class="form-check-label small fw-bold m-0" for="is-paid-switch" id="paid-label">Paid</label>
+                                                <input class="form-check-input m-0 ms-2" type="checkbox" name="is_completed"
+                                                       id="is-paid-switch" checked onchange="togglePaidMode()">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-success btn-lg w-100 py-3 fw-bold shadow-sm">
+                                        <i class="fas fa-check-circle me-2"></i>Process Sale &amp; Print
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="tab-pane fade" id="pills-inventory">
-             <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <form method="GET" class="mb-4 d-flex">
-                        <div class="input-group w-50">
-                            <input type="text" name="search" class="form-control" placeholder="Search product database...">
-                            <button type="submit" class="btn btn-primary px-4"><i class="fas fa-search"></i></button>
+            <!-- TAB 2: INVENTORY -->
+            <div class="tab-pane fade" id="pills-inventory" role="tabpanel">
+                <div class="card border-0 shadow-xs">
+                    <div class="card-header bg-white border-bottom py-3 px-4 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                        <h6 class="mb-0 fw-bold"><i class="fas fa-warehouse me-2 text-primary"></i>Stock Overview</h6>
+                        <form method="GET" class="d-flex gap-2" style="min-width: 260px;">
+                            <input type="text" name="search" value="{{ request.GET.search }}" class="form-control form-control-sm" placeholder="Filter product database...">
+                            <button type="submit" class="btn btn-primary btn-sm px-3">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </form>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light small text-uppercase text-muted">
+                                    <tr>
+                                        <th class="ps-4">Product</th>
+                                        <th>Unit Price</th>
+                                        <th>In Stock</th>
+                                        <th class="pe-4 text-end">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for p in products %}
+                                    <tr>
+                                        <td class="ps-4">
+                                            <div class="d-flex align-items-center gap-3">
+                                                {% if p.image %}
+                                                    <img src="{{ p.image.url }}" alt="{{ p.name }}" class="rounded border" width="44" height="44" style="object-fit: contain; background: #f8f9fa;">
+                                                {% else %}
+                                                    <div class="rounded border bg-light d-flex align-items-center justify-content-center text-muted" style="width: 44px; height: 44px;">
+                                                        <i class="fas fa-box"></i>
+                                                    </div>
+                                                {% endif %}
+                                                <div>
+                                                    <div class="fw-semibold text-dark">{{ p.name }}</div>
+                                                    <small class="text-muted">SKU #{{ p.id }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="fw-semibold tabular-nums">{{ p.selling_price|intcomma }} XAF</td>
+                                        <td class="tabular-nums">
+                                            <span class="badge rounded-pill bg-light text-dark border px-3 py-2">
+                                                {{ p.quantity }} {{ p.unit }}
+                                            </span>
+                                        </td>
+                                        <td class="pe-4 text-end">
+                                            {% if p.quantity <= 0 %}
+                                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-3 py-2">Out of Stock</span>
+                                            {% elif p.quantity <= p.min_stock_level %}
+                                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2">Low Stock</span>
+                                            {% else %}
+                                                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2">Healthy</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center py-5 text-muted">No matching products found.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
-                    </form>
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle border-top">
-                            <thead class="bg-light">
-                                <tr>
-                                    <th>Image</th><th>Product</th><th>Unit Price</th><th>In Stock</th><th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for p in products %}
-                                <tr>
-                                    <td>
-                                        {% if p.image %}
-                                        <img src="{{ p.image.url }}" class="rounded shadow-sm" width="45" height="45" style="object-fit: cover;">
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <div class="fw-bold">{{ p.name }}</div>
-                                        <small class="text-muted">ID: #{{ p.id }}</small>
-                                    </td>
-                                    <td class="fw-bold">{{ p.selling_price|intcomma }} XAF</td>
-                                    <td>
-                                        <span class="badge rounded-pill bg-light text-dark border px-3">
-                                            {{ p.quantity }} {{ p.unit }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        {% if p.quantity <= p.min_stock_level %}
-                                            <span class="badge bg-danger">Low Stock</span>
-                                        {% else %}
-                                            <span class="badge bg-success">Healthy</span>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="tab-pane fade" id="pills-report">
-            <div class="card border-0 shadow-sm text-center py-5">
-                <i class="fas fa-file-invoice-dollar fa-4x text-primary mb-3 opacity-25"></i>
-                <h4 class="fw-bold">Daily Reconciliation</h4>
-                <p class="text-muted mx-auto mb-4" style="max-width: 500px;">Generate a summary to finalize today's cash drawer and sync inventory.</p>
-                <div class="d-flex justify-content-center">
-                    <div class="col-md-4">
-                        <a href="{% url 'generate_daily_report' %}" class="btn btn-primary btn-lg w-100 py-3 fw-bold shadow-sm">
-                            <i class="fas fa-print me-2"></i>PRINT DAILY REPORT
+            <!-- TAB 3: DAILY REPORT -->
+            <div class="tab-pane fade" id="pills-report" role="tabpanel">
+                <div class="card border-0 shadow-xs text-center py-5 px-3">
+                    <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle bg-primary-subtle text-primary" style="width: 72px; height: 72px;">
+                        <i class="fas fa-file-invoice-dollar fa-2x"></i>
+                    </div>
+                    <h4 class="fw-bold text-dark">Daily Cash &amp; Sales Reconciliation</h4>
+                    <p class="text-muted mx-auto mb-4" style="max-width: 520px;">
+                        Generate an end-of-shift summary to verify cash and Mobile Money collections, review credit sales, and reconcile inventory.
+                    </p>
+                    <div class="d-flex justify-content-center">
+                        <a href="{% url 'generate_daily_report' %}" class="btn btn-primary btn-lg px-5 py-3 fw-bold shadow-xs">
+                            <i class="fas fa-print me-2"></i>Generate &amp; Print Daily Report
                         </a>
                     </div>
                 </div>
@@ -247,16 +393,17 @@
     </div>
 </div>
 
+<!-- Thermal Receipt Print Area (80mm) -->
 <div id="receipt-print-area" class="d-none">
     <div style="width: 80mm; padding: 10px; font-family: 'Courier New', Courier, monospace; font-size: 12px;">
         <div style="text-align: center;">
-            <h2 style="margin: 0;">MINI MARKET</h2>
-            <p style="margin: 5px 0;">Akwa, Douala<br>Tel: +237 XXX XXX XXX</p>
+            <h2 style="margin: 0; font-size: 16px;">MINI MARKET</h2>
+            <p style="margin: 4px 0;">Akwa, Douala<br>Tel: +237 XXX XXX XXX</p>
             <hr style="border-top: 1px dashed #000;">
         </div>
-        <p>Date: <span id="r-date"></span><br>Seller: {{ user.first_name }}</p>
+        <p style="margin: 4px 0;">Date: <span id="r-date"></span><br>Seller: {{ user.first_name|default:user.username }}</p>
         <hr style="border-top: 1px dashed #000;">
-        
+
         <table style="width: 100%; border-collapse: collapse;">
             <thead>
                 <tr>
@@ -267,7 +414,7 @@
             </thead>
             <tbody id="r-items"></tbody>
         </table>
-        
+
         <hr style="border-top: 1px dashed #000;">
         <div style="display: flex; justify-content: space-between;">
             <strong>TOTAL:</strong>
@@ -282,24 +429,152 @@
             <span id="r-change">0 XAF</span>
         </div>
         <hr style="border-top: 1px dashed #000;">
-        <p style="text-align: center;">Thank you for shopping!<br>Keep your receipt.</p>
+        <p style="text-align: center; margin: 4px 0;">Thank you for shopping!<br>Keep your receipt.</p>
     </div>
 </div>
 
 <style>
-    #receipt-print-area { display: none; }
-    @media print {
-        body * { visibility: hidden; margin: 0; padding: 0; }
-        #receipt-print-area, #receipt-print-area * { visibility: visible; display: block !important; }
-        #receipt-print-area { position: absolute; left: 0; top: 0; width: 80mm; background: white; }
-        @page { margin: 0; }
+    .pos-shell {
+        background: linear-gradient(180deg, #f4f6fa 0%, #eef2f7 100%);
+        min-height: 100vh;
     }
-    .product-card { cursor: pointer; transition: 0.3s; border: 1px solid transparent; }
-    .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important; border-color: #0d6efd; }
-    .nav-pills .nav-link { color: #6c757d; transition: 0.3s; }
-    .nav-pills .nav-link.active { background-color: #0d6efd; box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3); }
-    #pos-grid::-webkit-scrollbar { width: 6px; }
-    #pos-grid::-webkit-scrollbar-thumb { background: #ddd; border-radius: 10px; }
+    .tabular-nums {
+        font-variant-numeric: tabular-nums;
+    }
+    .shadow-2xs {
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+    .shadow-xs {
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+    }
+    .live-dot {
+        display: inline-block;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background-color: currentColor;
+        animation: pulseDot 1.8s infinite;
+    }
+    @keyframes pulseDot {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.35; }
+    }
+    .kpi-card {
+        border-radius: 14px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .kpi-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.07);
+    }
+    .kpi-label {
+        font-size: 0.72rem;
+        letter-spacing: 0.05em;
+    }
+    .kpi-value {
+        font-size: 1.5rem;
+        line-height: 1.2;
+    }
+    .kpi-icon {
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .pos-pills .nav-link {
+        color: #475569;
+        transition: all 0.2s ease;
+    }
+    .pos-pills .nav-link.active {
+        background-color: #0d6efd;
+        color: #fff;
+        box-shadow: 0 3px 10px rgba(13, 110, 253, 0.25);
+    }
+    .pos-grid-scroll {
+        max-height: 620px;
+        overflow-y: auto;
+    }
+    .product-card {
+        border-radius: 12px;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        overflow: hidden;
+    }
+    .product-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+        border-color: #0d6efd;
+    }
+    .product-card.out-of-stock {
+        opacity: 0.55;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+    .product-thumb-wrap {
+        height: 112px;
+    }
+    .product-img {
+        max-width: 100%;
+        max-height: 82px;
+        object-fit: contain;
+    }
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .sticky-order-panel {
+        border-radius: 14px;
+        overflow: hidden;
+    }
+    @media (min-width: 992px) {
+        .sticky-order-panel {
+            position: sticky;
+            top: 20px;
+        }
+    }
+    .cart-items-list {
+        min-height: 160px;
+        max-height: 280px;
+        overflow-y: auto;
+    }
+    .pos-grid-scroll::-webkit-scrollbar,
+    .cart-items-list::-webkit-scrollbar {
+        width: 6px;
+    }
+    .pos-grid-scroll::-webkit-scrollbar-thumb,
+    .cart-items-list::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 999px;
+    }
+    #receipt-print-area {
+        display: none;
+    }
+    @media print {
+        body * {
+            visibility: hidden;
+            margin: 0;
+            padding: 0;
+        }
+        #receipt-print-area,
+        #receipt-print-area * {
+            visibility: visible;
+            display: block !important;
+        }
+        #receipt-print-area {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 80mm;
+            background: #fff;
+        }
+        @page {
+            margin: 0;
+        }
+    }
 </style>
 
 <script>
@@ -317,94 +592,136 @@ function togglePaidMode() {
         paymentArea.style.opacity = '1';
         paymentArea.style.pointerEvents = 'auto';
         paymentMethod.disabled = false;
-        paidLabel.innerText = "Paid";
+        paidLabel.textContent = 'Paid';
         paidLabel.classList.remove('text-danger');
     } else {
         customerArea.style.display = 'block';
         paymentArea.style.opacity = '0.5';
         paymentArea.style.pointerEvents = 'none';
         paymentMethod.disabled = true;
-        paidLabel.innerText = "Unpaid (Credit)";
+        paidLabel.textContent = 'Credit';
         paidLabel.classList.add('text-danger');
-        
-        // Clear payment inputs
+
         document.getElementById('amount-tendered').value = '';
-        document.getElementById('change-due').innerText = "0 XAF";
+        document.getElementById('change-due').textContent = '0 XAF';
     }
 }
 
 function addToCart(id, name, price, stock) {
-    const itemStock = parseInt(stock);
-    const itemPrice = parseFloat(price);
+    const itemStock = parseInt(stock, 10);
+    const itemPrice = parseFloat(price) || 0;
     const currentQty = cart[id] ? cart[id].qty : 0;
 
-    if (itemStock <= 0) { alert("❌ Out of Stock!"); return; }
-    if (currentQty + 1 > itemStock) { alert(`⚠️ Only ${itemStock} units available.`); return; }
+    if (itemStock <= 0) {
+        alert('Out of stock.');
+        return;
+    }
+    if (currentQty + 1 > itemStock) {
+        alert(`Only ${itemStock} units available in stock.`);
+        return;
+    }
 
-    if (cart[id]) { cart[id].qty += 1; } 
-    else { cart[id] = { name: name, price: itemPrice, qty: 1, stock: itemStock }; }
-    
+    if (cart[id]) {
+        cart[id].qty += 1;
+    } else {
+        cart[id] = { name, price: itemPrice, qty: 1, stock: itemStock };
+    }
     renderCart();
 }
 
 function updateQty(id, delta) {
-    if (cart[id]) {
-        const newQty = cart[id].qty + delta;
-        if (delta > 0 && newQty > cart[id].stock) { alert("Stock limit reached!"); return; }
-        if (newQty <= 0) { delete cart[id]; } else { cart[id].qty = newQty; }
-        renderCart();
+    if (!cart[id]) return;
+    const newQty = cart[id].qty + delta;
+    if (delta > 0 && newQty > cart[id].stock) {
+        alert('Stock limit reached for this product.');
+        return;
     }
+    if (newQty <= 0) {
+        delete cart[id];
+    } else {
+        cart[id].qty = newQty;
+    }
+    renderCart();
+}
+
+function removeFromCart(id) {
+    delete cart[id];
+    renderCart();
 }
 
 function renderCart() {
     const container = document.getElementById('cart-items');
-    let subtotal = 0;
+    const hiddenInputs = document.getElementById('hidden-cart-inputs');
+    const badge = document.getElementById('cart-count-badge');
     const keys = Object.keys(cart);
-    
+
+    let subtotal = 0;
+    let totalUnits = 0;
+    hiddenInputs.innerHTML = '';
+
     if (keys.length === 0) {
-        container.innerHTML = `<div class="text-center py-5 opacity-25"><i class="fas fa-shopping-basket fa-3x"></i><p class="mt-2">Cart is empty</p></div>`;
+        badge.textContent = '0';
+        container.innerHTML = `
+            <div class="text-center py-5 text-muted">
+                <i class="fas fa-shopping-basket fa-2x mb-2 opacity-40"></i>
+                <p class="small mb-0">Click a product to add it to the order</p>
+            </div>`;
         updateDisplay(0);
         return;
     }
 
     container.innerHTML = '';
-    keys.forEach(id => {
+    keys.forEach((id) => {
         const item = cart[id];
-        subtotal += item.price * item.qty;
+        const lineTotal = item.price * item.qty;
+        subtotal += lineTotal;
+        totalUnits += item.qty;
+
+        hiddenInputs.innerHTML += `
+            <input type="hidden" name="product_ids" value="${id}">
+            <input type="hidden" name="quantities" value="${item.qty}">`;
+
         container.innerHTML += `
-            <div class="d-flex justify-content-between align-items-center mb-2 p-2 border-bottom bg-white rounded shadow-sm">
-                <div style="flex:1">
-                    <div class="fw-bold small text-truncate" style="max-width: 150px;">${item.name}</div>
-                    <small class="text-muted">${item.price.toLocaleString()} x ${item.qty}</small>
+            <div class="d-flex justify-content-between align-items-center gap-2 mb-2 p-2 bg-white border rounded-3">
+                <div class="min-w-0 flex-grow-1">
+                    <div class="fw-semibold small text-dark text-truncate" title="${item.name}">${item.name}</div>
+                    <div class="text-muted tabular-nums" style="font-size: 0.75rem;">
+                        ${Math.round(item.price).toLocaleString()} × ${item.qty} =
+                        <strong class="text-dark">${Math.round(lineTotal).toLocaleString()} XAF</strong>
+                    </div>
                 </div>
-                <div class="d-flex align-items-center">
-                    <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="updateQty('${id}', -1)">-</button>
-                    <span class="mx-2 fw-bold">${item.qty}</span>
-                    <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="updateQty('${id}', 1)">+</button>
-                    <input type="hidden" name="product_ids" value="${id}">
-                    <input type="hidden" name="quantities" value="${item.qty}">
+                <div class="d-flex align-items-center gap-1 flex-shrink-0">
+                    <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="updateQty('${id}', -1)" aria-label="Decrease quantity">−</button>
+                    <span class="px-1 fw-bold small tabular-nums">${item.qty}</span>
+                    <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="updateQty('${id}', 1)" aria-label="Increase quantity">+</button>
+                    <button type="button" class="btn btn-sm btn-link text-danger py-0 px-1" onclick="removeFromCart('${id}')" aria-label="Remove item">
+                        <i class="fas fa-xmark"></i>
+                    </button>
                 </div>
             </div>`;
     });
+
+    badge.textContent = String(totalUnits);
     updateDisplay(subtotal);
 }
 
 function updateDisplay(subtotal) {
     const discountInput = document.getElementById('discount-input');
-    const discount = discountInput ? parseFloat(discountInput.value) || 0 : 0;
-    const finalTotal = subtotal * (1 - (discount / 100));
-    
-    document.getElementById('subtotal-val').innerText = subtotal.toLocaleString() + ' XAF';
-    document.getElementById('cart-total').innerText = Math.round(finalTotal).toLocaleString() + ' XAF';
-    document.getElementById('final-total-input').value = Math.round(finalTotal);
+    const rawDiscount = discountInput ? parseFloat(discountInput.value) || 0 : 0;
+    const discount = Math.min(Math.max(rawDiscount, 0), 100);
+    const finalTotal = Math.round(subtotal * (1 - discount / 100));
+
+    document.getElementById('subtotal-val').textContent = Math.round(subtotal).toLocaleString() + ' XAF';
+    document.getElementById('cart-total').textContent = finalTotal.toLocaleString() + ' XAF';
+    document.getElementById('final-total-input').value = finalTotal;
     updateChange();
 }
 
 function updateChange() {
     const total = parseFloat(document.getElementById('final-total-input').value) || 0;
     const tendered = parseFloat(document.getElementById('amount-tendered').value) || 0;
-    const change = tendered - total;
-    document.getElementById('change-due').innerText = (change > 0 ? change : 0).toLocaleString() + ' XAF';
+    const change = Math.max(0, Math.round(tendered - total));
+    document.getElementById('change-due').textContent = change.toLocaleString() + ' XAF';
 }
 
 function clearCart() {
@@ -417,50 +734,74 @@ function validateSale() {
     const customerId = document.getElementById('customer-select').value;
 
     if (Object.keys(cart).length === 0) {
-        alert("Please add items to the cart.");
+        alert('Please add at least one item to the cart before processing the sale.');
         return false;
     }
 
-    if (!isPaid && customerId === "") {
-        alert("Please select a customer account to grant credit!");
+    if (!isPaid && customerId === '') {
+        alert('Please select a customer account to record a credit sale.');
         return false;
     }
 
-    // Receipt Preparation
     const rItems = document.getElementById('r-items');
     rItems.innerHTML = '';
-    Object.keys(cart).forEach(id => {
+    Object.keys(cart).forEach((id) => {
         const item = cart[id];
-        rItems.innerHTML += `<tr><td>${item.name.substring(0, 15)}</td><td style="text-align: right;">${item.qty}</td><td style="text-align: right;">${(item.price * item.qty).toLocaleString()}</td></tr>`;
+        const rowTotal = Math.round(item.price * item.qty).toLocaleString();
+        rItems.innerHTML += `
+            <tr>
+                <td>${item.name.substring(0, 16)}</td>
+                <td style="text-align: right;">${item.qty}</td>
+                <td style="text-align: right;">${rowTotal}</td>
+            </tr>`;
     });
 
-    document.getElementById('r-total').innerText = document.getElementById('cart-total').innerText;
-    document.getElementById('r-paid').innerText = isPaid ? (parseFloat(document.getElementById('amount-tendered').value) || 0).toLocaleString() + " XAF" : "CREDIT";
-    document.getElementById('r-change').innerText = document.getElementById('change-due').innerText;
-    document.getElementById('r-date').innerText = new Date().toLocaleString();
+    const tenderedVal = parseFloat(document.getElementById('amount-tendered').value) || 0;
+    document.getElementById('r-total').textContent = document.getElementById('cart-total').textContent;
+    document.getElementById('r-paid').textContent = isPaid
+        ? tenderedVal.toLocaleString() + ' XAF'
+        : 'CREDIT';
+    document.getElementById('r-change').textContent = document.getElementById('change-due').textContent;
+    document.getElementById('r-date').textContent = new Date().toLocaleString();
 
     window.print();
-    return true; 
+    return true;
 }
 
 function filterPOS() {
-    let input = document.getElementById('posSearch').value.toLowerCase();
-    let items = document.getElementsByClassName('product-item');
+    const query = document.getElementById('posSearch').value.toLowerCase().trim();
+    const items = document.getElementsByClassName('product-item');
     for (let i = 0; i < items.length; i++) {
-        let name = items[i].getAttribute('data-name');
-        items[i].style.display = name.includes(input) ? "" : "none";
+        const name = items[i].getAttribute('data-name') || '';
+        items[i].style.display = name.includes(query) ? '' : 'none';
     }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+function clearSearch() {
+    const input = document.getElementById('posSearch');
+    if (input) {
+        input.value = '';
+        filterPOS();
+        input.focus();
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
     const tenderEl = document.getElementById('amount-tendered');
     const discountEl = document.getElementById('discount-input');
-    if(tenderEl) tenderEl.addEventListener('input', updateChange);
-    if(discountEl) discountEl.addEventListener('input', () => {
-        let subtotal = 0;
-        Object.keys(cart).forEach(id => subtotal += cart[id].price * cart[id].qty);
-        updateDisplay(subtotal);
-    });
+
+    if (tenderEl) {
+        tenderEl.addEventListener('input', updateChange);
+    }
+    if (discountEl) {
+        discountEl.addEventListener('input', () => {
+            let subtotal = 0;
+            Object.keys(cart).forEach((id) => {
+                subtotal += cart[id].price * cart[id].qty;
+            });
+            updateDisplay(subtotal);
+        });
+    }
 });
 </script>
 {% endblock %}

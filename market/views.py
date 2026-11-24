@@ -1288,23 +1288,45 @@ def delete_credit(request, credit_id):
         
     return redirect('manage_credits')
 
-from django.contrib import messages
+def _user_can_settle_credit(user):
+    if not user.is_authenticated:
+        return False
+    if user.is_superuser or user.is_staff:
+        return True
+    # Adjust this check to match your Seller model relation / user attributes
+    seller = getattr(user, "seller", None)
+    if seller is not None:
+        return getattr(seller, "is_active", True)
+    return False
 
+
+@login_required
+@require_POST
 def mark_credit_as_paid(request, credit_id):
-    if not request.user.is_superuser:
+    is_seller = hasattr(request.user, "seller") and not (
+        request.user.is_superuser or request.user.is_staff
+    )
+    fallback_url = "seller_manage_credits" if is_seller else "manage_credits"
+
+    if not _user_can_settle_credit(request.user):
         messages.error(request, "Unauthorized access.")
-        return redirect('manage_credits')
-        
+        return redirect(fallback_url)
+
     credit = get_object_or_404(Credit, id=credit_id)
-    
-    if credit.status != 'paid':
-        credit.status = 'paid'
+
+    if credit.status != "paid":
+        credit.status = "paid"
+        if hasattr(credit, "paid_by"):
+            credit.paid_by = request.user
         credit.save()
-        messages.success(request, f"Credit for {credit.customer.first_name} marked as paid.")
+        messages.success(
+            request,
+            f"Credit for {credit.customer.first_name} marked as paid.",
+        )
     else:
         messages.info(request, "This credit is already settled.")
-        
-    return redirect('manage_credits')
+
+    return redirect(fallback_url)
 
 from django.db.models import Sum, Q, DecimalField
 from django.db.models.functions import Coalesce

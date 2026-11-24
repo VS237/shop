@@ -1,154 +1,322 @@
 {% extends "admin/dashboard_base.html" %}
+{% load humanize %}
 
 {% block title %}Sales Overview{% endblock %}
 
 {% block content %}
-<div class="row pt-4">
-    
-    <div class="col-12">
-        <h1 class="mb-4">Overview Dashboard</h1>
-    </div>
-
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-primary shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col me-2">
-                        <div class="text-xs fw-bold text-primary text-uppercase mb-1">
-                            Total Sales (Last 30 Days)
-                        </div>
-                        <div class="h5 mb-0 fw-bold text-gray-800">{{ total_sales|floatformat:0 }}
-                        <small class="fs-6">XAF</small>    
-                        </div>
-                    </div>
-                    <div class="col-auto"><i class="fas fa-dollar-sign fa-2x text-primary"></i></div>
-                </div>
-            </div>
+<div class="admin-overview py-3 px-1 px-md-2">
+    <!-- Header Bar -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-3 py-1 fw-semibold mb-1">
+                Executive Analytics · Last 30 Days
+            </span>
+            <h2 class="fw-bold text-dark mb-0">Overview Dashboard</h2>
+        </div>
+        <div class="d-flex align-items-center gap-2 text-muted small bg-white border rounded-3 px-3 py-2 shadow-2xs">
+            <i class="fas fa-coins text-primary"></i>
+            <span>Currency: <strong class="text-dark">XAF</strong></span>
         </div>
     </div>
 
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-success shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col me-2">
-                        <div class="text-xs fw-bold text-success text-uppercase mb-1">
-                            Net Profit (Last 30 Days)
+    <!-- KPI Cards Row -->
+    <div class="row g-3 g-xl-4 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="card admin-kpi-card border-0 shadow-xs h-100">
+                <div class="card-body p-3 p-md-4 d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="kpi-eyebrow text-uppercase fw-bold text-primary mb-1">
+                            Total Sales (30d)
                         </div>
-                        <div class="h5 mb-0 fw-bold text-gray-800">{{ net_profit|floatformat:0 }}
-                        <small class="fs-6">XAF</small>
+                        <div class="kpi-metric fw-bold text-dark tabular-nums">
+                            {{ total_sales|floatformat:0|intcomma|default:"0" }}
+                            <span class="fs-6 fw-semibold text-muted">XAF</span>
+                        </div>
+                        <div class="small text-muted mt-2">
+                            <i class="fas fa-calendar-days me-1 text-primary"></i>Rolling 30-day revenue
                         </div>
                     </div>
-                    <div class="col-auto"><i class="fas fa-hand-holding-dollar fa-2x text-success"></i></div>
+                    <div class="kpi-badge bg-primary-subtle text-primary rounded-3">
+                        <i class="fas fa-sack-dollar fa-lg"></i>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-danger shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col me-2">
-                        <div class="text-xs fw-bold text-danger text-uppercase mb-1">
-                            Total Expenses (Last 30 Days)
-                        </div>
-                        <div class="h5 mb-0 fw-bold text-gray-800">{{ total_expenses|floatformat:0 }}
-                        <small class="fs-6">XAF</small>    
-                        </div>
-                    </div>
-                    <div class="col-auto"><i class="fas fa-receipt fa-2x text-danger"></i></div>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-info shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col me-2">
-                        <div class="text-xs fw-bold text-warning text-uppercase mb-1">
+        <div class="col-sm-6 col-xl-3">
+            <div class="card admin-kpi-card border-0 shadow-xs h-100">
+                <div class="card-body p-3 p-md-4 d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="kpi-eyebrow text-uppercase fw-bold text-success mb-1">
+                            Net Profit (30d)
+                        </div>
+                        <div class="kpi-metric fw-bold text-dark tabular-nums">
+                            {{ net_profit|floatformat:0|intcomma|default:"0" }}
+                            <span class="fs-6 fw-semibold text-muted">XAF</span>
+                        </div>
+                        <div class="small text-success fw-medium mt-2">
+                            <i class="fas fa-chart-line me-1"></i>After 30-day expenses
+                        </div>
+                    </div>
+                    <div class="kpi-badge bg-success-subtle text-success rounded-3">
+                        <i class="fas fa-hand-holding-dollar fa-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card admin-kpi-card border-0 shadow-xs h-100">
+                <div class="card-body p-3 p-md-4 d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="kpi-eyebrow text-uppercase fw-bold text-danger mb-1">
+                            Total Expenses (30d)
+                        </div>
+                        <div class="kpi-metric fw-bold text-dark tabular-nums">
+                            {{ total_expenses|floatformat:0|intcomma|default:"0" }}
+                            <span class="fs-6 fw-semibold text-muted">XAF</span>
+                        </div>
+                        <div class="small text-muted mt-2">
+                            <i class="fas fa-receipt me-1 text-danger"></i>Operating &amp; recorded costs
+                        </div>
+                    </div>
+                    <div class="kpi-badge bg-danger-subtle text-danger rounded-3">
+                        <i class="fas fa-receipt fa-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card admin-kpi-card border-0 shadow-xs h-100">
+                <div class="card-body p-3 p-md-4 d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="kpi-eyebrow text-uppercase fw-bold text-warning-emphasis mb-1">
                             Pending Credits
                         </div>
-                        <div class="h5 mb-0 fw-bold text-gray-800">{{ total_credit|floatformat:0 }}
-                        <small class="fs-6">XAF</small></div>
+                        <div class="kpi-metric fw-bold text-dark tabular-nums">
+                            {{ total_credit|floatformat:0|intcomma|default:"0" }}
+                            <span class="fs-6 fw-semibold text-muted">XAF</span>
+                        </div>
+                        <div class="small text-muted mt-2">
+                            <i class="fas fa-clock me-1 text-warning"></i>Outstanding credit balance
+                        </div>
                     </div>
-                    <div class="col-auto"><i class="fas fa-file-invoice-dollar fa-2x text-warning"></i></div>
+                    <div class="kpi-badge bg-warning-subtle text-warning-emphasis rounded-3">
+                        <i class="fas fa-file-invoice-dollar fa-lg"></i>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    
-    <div class="row">
-    <div class="col-lg-7 mb-4">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3"><h6 class="m-0 fw-bold text-primary">Daily Sales Trend</h6></div>
-            <div class="card-body"><canvas id="salesChart"></canvas></div>
+
+    <!-- Charts Row -->
+    <div class="row g-3 g-xl-4 mb-4">
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-xs h-100 chart-card">
+                <div class="card-header bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="fw-bold text-dark mb-0">Daily Sales Trend</h6>
+                        <small class="text-muted">Revenue trajectory over time</small>
+                    </div>
+                    <span class="badge bg-light text-dark border fw-semibold">XAF</span>
+                </div>
+                <div class="card-body p-3 p-md-4">
+                    <div class="chart-canvas-wrap">
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-xs h-100 chart-card">
+                <div class="card-header bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="fw-bold text-dark mb-0">Top 5 Products</h6>
+                        <small class="text-muted">Ranked by units sold</small>
+                    </div>
+                    <span class="badge bg-light text-dark border fw-semibold">Units</span>
+                </div>
+                <div class="card-body p-3 p-md-4">
+                    <div class="chart-canvas-wrap">
+                        <canvas id="productChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    
-    <div class="col-lg-5 mb-4">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3"><h6 class="m-0 fw-bold text-primary">Top 5 Product Performance (Units Sold)</h6></div>
-            <div class="card-body"><canvas id="productChart"></canvas></div>
+
+    <!-- Danger Zone Card -->
+    <div class="card border border-danger-subtle bg-danger-subtle bg-opacity-25 shadow-2xs danger-card">
+        <div class="card-body p-3 p-md-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <h6 class="fw-bold text-danger mb-1">
+                    <i class="fas fa-triangle-exclamation me-2"></i>Danger Zone — Reset Sales Ledger
+                </h6>
+                <p class="small text-muted mb-0">
+                    Permanently deletes all recorded sales entries from the database. This action cannot be undone.
+                </p>
+            </div>
+            <form action="{% url 'delete_all_sales' %}" method="POST"
+                  onsubmit="return confirm('ARE YOU SURE? This will permanently delete ALL your sales records and cannot be undone.');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger fw-semibold px-3 py-2">
+                    <i class="fas fa-trash-alt me-2"></i>Clear All Sales
+                </button>
+            </form>
         </div>
     </div>
-    
-
-    <div class="col-lg-5 mb-3">
-        <form action="{% url 'delete_all_sales' %}" method="POST" onsubmit="return confirm('ARE YOU SURE? This will permanently delete ALL your sales records and cannot be undone.');">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-outline-danger">
-            <i class="fas fa-trash-alt me-2"></i>Clear All Sales
-        </button>
-        </form>
-    </div>
-    
-
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    // Parse JSON data from Django
-    const salesLabels = JSON.parse('{{ sales_labels_json|safe }}');
-    const salesData = JSON.parse('{{ sales_data_json|safe }}');
-    const productLabels = JSON.parse('{{ product_labels_json|safe }}');
-    const productData = JSON.parse('{{ product_data_json|safe }}');
+    function parseChartPayload(rawValue) {
+        if (Array.isArray(rawValue)) return rawValue;
+        if (typeof rawValue === 'string' && rawValue.trim()) {
+            try {
+                return JSON.parse(rawValue);
+            } catch (e) {
+                console.error('Chart payload parse error:', e);
+                return [];
+            }
+        }
+        return [];
+    }
 
-    // --- Sales Trend Line Chart ---
-    new Chart(document.getElementById('salesChart'), {
-        type: 'line',
-        data: {
-            labels: salesLabels,
-            datasets: [{
-                label: 'Revenue (XAF)',
-                data: salesData,
-                borderColor: '#4e73df',
-                backgroundColor: 'rgba(78, 115, 223, 0.05)',
-                fill: true,
-                tension: 0.3
-            }]
-        },
-        options: { maintainAspectRatio: false }
-    });
+    const salesLabels = parseChartPayload('{{ sales_labels_json|default:"[]"|escapejs }}');
+    const salesData = parseChartPayload('{{ sales_data_json|default:"[]"|escapejs }}');
+    const productLabels = parseChartPayload('{{ product_labels_json|default:"[]"|escapejs }}');
+    const productData = parseChartPayload('{{ product_data_json|default:"[]"|escapejs }}');
 
-    // --- Top Products Bar Chart ---
-    new Chart(document.getElementById('productChart'), {
-        type: 'bar',
-        data: {
-            labels: productLabels,
-            datasets: [{
-                label: 'Units Sold',
-                data: productData,
-                backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'],
-            }]
-        },
-        options: { 
-            indexAxis: 'y', // Makes it a horizontal bar chart
-            maintainAspectRatio: false 
+    document.addEventListener('DOMContentLoaded', () => {
+        const salesCtx = document.getElementById('salesChart');
+        if (salesCtx && typeof Chart !== 'undefined') {
+            new Chart(salesCtx, {
+                type: 'line',
+                data: {
+                    labels: salesLabels,
+                    datasets: [{
+                        label: 'Revenue (XAF)',
+                        data: salesData,
+                        borderColor: '#0d6efd',
+                        backgroundColor: 'rgba(13, 110, 253, 0.08)',
+                        borderWidth: 2.5,
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        fill: true,
+                        tension: 0.35
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => ` ${Number(ctx.parsed.y || 0).toLocaleString()} XAF`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: (val) => Number(val).toLocaleString()
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        const productCtx = document.getElementById('productChart');
+        if (productCtx && typeof Chart !== 'undefined') {
+            new Chart(productCtx, {
+                type: 'bar',
+                data: {
+                    labels: productLabels,
+                    datasets: [{
+                        label: 'Units Sold',
+                        data: productData,
+                        backgroundColor: ['#0d6efd', '#198754', '#0dcaf0', '#ffc107', '#dc3545'],
+                        borderRadius: 6,
+                        maxBarThickness: 34
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        },
+                        y: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
         }
     });
 </script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tabular-nums {
+        font-variant-numeric: tabular-nums;
+    }
+    .shadow-2xs {
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+    .shadow-xs {
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+    }
+    .admin-kpi-card,
+    .chart-card,
+    .danger-card {
+        border-radius: 14px;
+    }
+    .admin-kpi-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .admin-kpi-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.07);
+    }
+    .kpi-eyebrow {
+        font-size: 0.72rem;
+        letter-spacing: 0.05em;
+    }
+    .kpi-metric {
+        font-size: 1.45rem;
+        line-height: 1.2;
+    }
+    .kpi-badge {
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .chart-canvas-wrap {
+        position: relative;
+        height: 320px;
+        width: 100%;
+    }
+</style>
 {% endblock %}

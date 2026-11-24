@@ -1,21 +1,75 @@
 {% extends "admin/dashboard_base.html" %}
 {% load humanize %}
 
+{% block title %}Customer Control Panel{% endblock %}
+
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <a href="{% url 'manage_sellers' %}" class="btn btn-success">
-          <i class="fas fa-user-cog"></i> Manage Sellers
-        </a>
-        <h3 class="fw-bold text-dark">Customer Control Panel</h3>
-        <span class="badge bg-primary px-3 py-2">Total Customers: {{ customers.count }}</span>
+<div class="customer-control-panel py-2">
+    <!-- Top Action Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-3 py-1 fw-semibold mb-1">
+                Accounts &amp; Credit Risk
+            </span>
+            <h2 class="fw-bold text-dark mb-0">
+                <i class="fas fa-address-book text-success me-2"></i>Customer Control Panel
+            </h2>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <span class="badge bg-white text-dark border px-3 py-2 shadow-2xs tabular-nums">
+                <i class="fas fa-users text-success me-1"></i>Total Customers: <strong>{{ customers.count }}</strong>
+            </span>
+            <a href="{% url 'manage_sellers' %}" class="btn btn-white border fw-semibold px-3 py-2 shadow-2xs">
+                <i class="fas fa-user-cog text-success me-2"></i>Manage Sellers
+            </a>
+        </div>
     </div>
 
-    <div class="card border-0 shadow-sm">
+    <!-- Search & Filter Bar -->
+    <div class="card border-0 shadow-xs panel-card mb-4">
+        <div class="card-body p-3 p-md-4">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-7 col-lg-8">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0 text-muted">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" id="customerSearch"
+                               class="form-control bg-light border-start-0 shadow-none"
+                               placeholder="Search by customer name, phone number, or category..."
+                               oninput="filterCustomers()">
+                    </div>
+                </div>
+
+                <div class="col-md-5 col-lg-4">
+                    <select id="creditFilter" class="form-select bg-light shadow-none" onchange="filterCustomers()">
+                        <option value="all">All Credit Statuses</option>
+                        <option value="authorized">Authorized for Credit</option>
+                        <option value="no-credit">No Credit</option>
+                        <option value="with-debt">Has Outstanding Debt</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customers Directory Table -->
+    <div class="card border-0 shadow-xs panel-card">
+        <div class="card-header bg-white border-bottom py-3 px-4 d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div>
+                <h6 class="fw-bold text-dark mb-0">Customer Accounts</h6>
+                <small class="text-muted">Manage credit approval, credit limits, and outstanding balances</small>
+            </div>
+            <span class="small text-muted tabular-nums" id="visibleCustomerCount">
+                Showing {{ customers.count }} account{{ customers.count|pluralize }}
+            </span>
+        </div>
+
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light">
+                <table class="table table-hover align-middle mb-0" id="customersTable">
+                    <thead class="table-light small text-uppercase text-muted">
                         <tr>
                             <th class="ps-4">Identity</th>
                             <th>Category</th>
@@ -26,42 +80,85 @@
                     </thead>
                     <tbody>
                         {% for customer in customers %}
-                        <tr>
+                        {% with full_name=customer.first_name|add:" "|add:customer.last_name %}
+                        <tr class="customer-row"
+                            data-search="{{ full_name|lower }} {{ customer.phone|lower }} {{ customer.customer_type|lower }}"
+                            data-credit="{% if customer.is_eligible_for_credit %}authorized{% else %}no-credit{% endif %}"
+                            data-debt="{% if customer.total_debt and customer.total_debt > 0 %}yes{% else %}no{% endif %}">
                             <td class="ps-4">
-                                <div class="fw-bold text-dark">{{ customer.first_name }} {{ customer.last_name }}</div>
-                                <div class="small text-muted"><i class="fas fa-phone-alt me-1"></i>{{ customer.phone }}</div>
-                            </td>
-                            <td>
-                                <span class="text-capitalize small px-2 py-1 bg-light border rounded">
-                                    {{ customer.customer_type }}
-                                </span>
-                            </td>
-                            <td class="text-center">
-                                {% if customer.is_eligible_for_credit %}
-                                    <div class="text-success small fw-bold"><i class="fas fa-check-circle me-1"></i>Authorized</div>
-                                    <div class="small text-muted" style="font-size: 0.7rem;">Limit: {{ customer.credit_limit|intcomma }} XAF</div>
-                                {% else %}
-                                    <div class="text-muted small"><i class="fas fa-ban me-1"></i>No Credit</div>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <div class="fw-bold {% if customer.total_debt > 0 %}text-danger{% else %}text-muted{% endif %}">
-                                    {{ customer.total_debt|default:0|intcomma }} XAF
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="customer-avatar rounded-circle fw-bold">
+                                        {{ customer.first_name|default:customer.phone|slice:":1"|upper }}
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold text-dark">
+                                            {{ customer.first_name }} {{ customer.last_name }}
+                                        </div>
+                                        <div class="small text-muted tabular-nums">
+                                            <i class="fas fa-phone me-1" style="font-size: 0.72rem;"></i>{{ customer.phone|default:"—" }}
+                                        </div>
+                                    </div>
                                 </div>
                             </td>
+
+                            <td>
+                                <span class="badge rounded-pill bg-light text-dark border text-capitalize px-3 py-2 fw-medium">
+                                    {{ customer.customer_type|default:"Standard" }}
+                                </span>
+                            </td>
+
+                            <td class="text-center">
+                                {% if customer.is_eligible_for_credit %}
+                                    <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-3 py-1 fw-semibold">
+                                        <i class="fas fa-check-circle me-1"></i>Authorized
+                                    </span>
+                                    <div class="small text-muted mt-1 tabular-nums" style="font-size: 0.75rem;">
+                                        Limit: <strong class="text-dark">{{ customer.credit_limit|default:0|intcomma }}</strong> XAF
+                                    </div>
+                                {% else %}
+                                    <span class="badge rounded-pill bg-secondary-subtle text-secondary border border-secondary-subtle px-3 py-2 fw-medium">
+                                        <i class="fas fa-ban me-1"></i>No Credit
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td class="tabular-nums">
+                                {% if customer.total_debt and customer.total_debt > 0 %}
+                                    <span class="fw-bold text-danger">
+                                        {{ customer.total_debt|intcomma }} <small class="fw-semibold">XAF</small>
+                                    </span>
+                                {% else %}
+                                    <span class="fw-semibold text-muted">
+                                        0 <small class="fw-normal">XAF</small>
+                                    </span>
+                                {% endif %}
+                            </td>
+
                             <td class="pe-4 text-end">
-                                <form action="{% url 'toggle_credit_eligibility' customer.id %}" method="POST" class="d-inline">
+                                <form action="{% url 'toggle_credit_eligibility' customer.id %}" method="POST" class="d-inline m-0">
                                     {% csrf_token %}
                                     {% if customer.is_eligible_for_credit %}
-                                        <button type="submit" class="btn btn-sm btn-outline-danger w-100" style="max-width: 150px;">
-                                            Revoke Eligibility
+                                        <button type="submit" class="btn btn-sm btn-outline-danger fw-semibold px-3">
+                                            <i class="fas fa-user-lock me-1"></i>Revoke Eligibility
                                         </button>
                                     {% else %}
-                                        <button type="submit" class="btn btn-sm btn-primary w-100" style="max-width: 150px;">
-                                            Approve Credit
+                                        <button type="submit" class="btn btn-sm btn-success fw-semibold px-3">
+                                            <i class="fas fa-user-check me-1"></i>Approve Credit
                                         </button>
                                     {% endif %}
                                 </form>
+                            </td>
+                        </tr>
+                        {% endwith %}
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5">
+                                <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle bg-light text-muted"
+                                     style="width: 64px; height: 64px;">
+                                    <i class="fas fa-user-slash fa-xl"></i>
+                                </div>
+                                <h6 class="fw-bold text-dark mb-1">No customers registered yet</h6>
+                                <p class="text-muted small mb-0">Customer accounts and credit records will appear here once added.</p>
                             </td>
                         </tr>
                         {% endfor %}
@@ -71,4 +168,70 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tabular-nums {
+        font-variant-numeric: tabular-nums;
+    }
+    .shadow-2xs {
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+    .shadow-xs {
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+    }
+    .panel-card {
+        border-radius: 14px;
+        overflow: hidden;
+    }
+    .customer-avatar {
+        width: 38px;
+        height: 38px;
+        background-color: rgba(13, 110, 253, 0.12);
+        color: #0d6efd;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function filterCustomers() {
+    const query = (document.getElementById('customerSearch')?.value || '').toLowerCase().trim();
+    const creditFilter = document.getElementById('creditFilter')?.value || 'all';
+    const rows = document.querySelectorAll('#customersTable tbody tr.customer-row');
+    let visibleCount = 0;
+
+    rows.forEach((row) => {
+        const searchText = row.getAttribute('data-search') || '';
+        const creditStatus = row.getAttribute('data-credit') || '';
+        const hasDebt = row.getAttribute('data-debt') || 'no';
+
+        const matchesQuery = !query || searchText.includes(query);
+        let matchesFilter = true;
+
+        if (creditFilter === 'authorized') {
+            matchesFilter = creditStatus === 'authorized';
+        } else if (creditFilter === 'no-credit') {
+            matchesFilter = creditStatus === 'no-credit';
+        } else if (creditFilter === 'with-debt') {
+            matchesFilter = hasDebt === 'yes';
+        }
+
+        const show = matchesQuery && matchesFilter;
+        row.style.display = show ? '' : 'none';
+        if (show) visibleCount += 1;
+    });
+
+    const counter = document.getElementById('visibleCustomerCount');
+    if (counter) {
+        counter.textContent = `Showing ${visibleCount} account${visibleCount === 1 ? '' : 's'}`;
+    }
+}
+</script>
 {% endblock %}
